@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <authoring_tool>Codex</authoring_tool>
+    </contributor>
+    <created>2026-03-06T00:00:00Z</created>
+    <modified>2026-03-06T00:00:00Z</modified>
+    <unit name="meter" meter="1.0"/>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+
+  <library_images>
+    <image id="tag_image" name="tag_image">
+      <init_from>tag16h5-0.png</init_from>
+    </image>
+  </library_images>
+
+  <library_effects>
+    <effect id="tag_effect" name="tag_effect">
+      <profile_COMMON>
+        <newparam sid="tag_surface">
+          <surface type="2D">
+            <init_from>tag_image</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="tag_sampler">
+          <sampler2D>
+            <source>tag_surface</source>
+          </sampler2D>
+        </newparam>
+        <technique sid="common">
+          <phong>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>1 1 1 1</color>
+            </ambient>
+            <diffuse>
+              <texture texture="tag_sampler" texcoord="UVMap"/>
+            </diffuse>
+            <specular>
+              <color>0 0 0 1</color>
+            </specular>
+            <shininess>
+              <float>1.0</float>
+            </shininess>
+          </phong>
+        </technique>
+        <extra>
+          <technique profile="GOOGLEEARTH">
+            <double_sided>1</double_sided>
+          </technique>
+        </extra>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+
+  <library_materials>
+    <material id="tag_material" name="tag_material">
+      <instance_effect url="#tag_effect"/>
+    </material>
+  </library_materials>
+
+  <library_geometries>
+    <geometry id="tag_plane_geometry" name="tag_plane_geometry">
+      <mesh>
+        <source id="tag_plane_positions">
+          <float_array id="tag_plane_positions_array" count="12">
+            -0.1 -0.1 0
+             0.1 -0.1 0
+             0.1  0.1 0
+            -0.1  0.1 0
+          </float_array>
+          <technique_common>
+            <accessor source="#tag_plane_positions_array" count="4" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+
+        <source id="tag_plane_normals">
+          <float_array id="tag_plane_normals_array" count="12">
+            0 0 1
+            0 0 1
+            0 0 1
+            0 0 1
+          </float_array>
+          <technique_common>
+            <accessor source="#tag_plane_normals_array" count="4" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+
+        <source id="tag_plane_uvs">
+          <float_array id="tag_plane_uvs_array" count="8">
+            0 0
+            1 0
+            1 1
+            0 1
+          </float_array>
+          <technique_common>
+            <accessor source="#tag_plane_uvs_array" count="4" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+
+        <vertices id="tag_plane_vertices">
+          <input semantic="POSITION" source="#tag_plane_positions"/>
+        </vertices>
+
+        <triangles count="2" material="tag_material_symbol">
+          <input semantic="VERTEX" source="#tag_plane_vertices" offset="0"/>
+          <input semantic="NORMAL" source="#tag_plane_normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#tag_plane_uvs" offset="2" set="0"/>
+          <p>
+            0 0 0 1 1 1 2 2 2
+            0 0 0 2 2 2 3 3 3
+          </p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+
+  <library_visual_scenes>
+    <visual_scene id="tag_scene" name="tag_scene">
+      <node id="tag_node" name="tag_node">
+        <instance_geometry url="#tag_plane_geometry">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="tag_material_symbol" target="#tag_material">
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+
+  <scene>
+    <instance_visual_scene url="#tag_scene"/>
+  </scene>
+</COLLADA>

@@ -1,0 +1,55 @@
+keyboard_teleop_node:
+  ros__parameters:
+    cmd_vel_topic: '/ugv/cmd_vel_keyboard'
+    stamped: false
+    frame_id: ''
+    linear_speed: 0.5
+    angular_speed: 1.0
+    speed_step: 0.05
+    turn_step: 0.1
+    publish_rate: 60.0
+    accel_limit_linear: 2.0
+    decel_limit_linear: 3.0
+    accel_limit_angular: 6.0
+    decel_limit_angular: 8.0
+    idle_timeout_sec: 0.25
+    evdev_device: ''
+    grab_device: false
+    evdev_poll_timeout: 0.005
+
+keyboard_gui_teleop_node:
+  ros__parameters:
+    cmd_vel_topic: '/ugv/cmd_vel_keyboard'
+    stamped: false
+    frame_id: ''
+    linear_speed: 0.5
+    angular_speed: 1.0
+    speed_step: 0.05
+    turn_step: 0.1
+    publish_rate: 60.0
+    accel_limit_linear: 2.0
+    decel_limit_linear: 3.0
+    accel_limit_angular: 6.0
+    decel_limit_angular: 8.0
+    idle_timeout_sec: 0.25
+    window_title: 'UGV Keyboard Teleop'
+    focus_loss_zero_cmd: true
+
+keyboard_tty_teleop_node:
+  ros__parameters:
+    cmd_vel_topic: '/ugv/cmd_vel_keyboard'
+    stamped: false
+    frame_id: ''
+    linear_speed: 0.5
+    angular_speed: 1.0
+    speed_step: 0.05
+    turn_step: 0.1
+    publish_rate: 60.0
+    accel_limit_linear: 2.0
+    decel_limit_linear: 3.0
+    accel_limit_angular: 6.0
+    decel_limit_angular: 8.0
+    idle_timeout_sec: 0.25
+    repeat_timeout_sec: 0.35
+    read_poll_timeout: 0.02
+    tty_device_path: ''
