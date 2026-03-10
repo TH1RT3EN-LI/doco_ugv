@@ -267,9 +267,9 @@ Visualization Manager:
           Value: false
         lower_right_wheel_shaft:
           Value: false
-        map:
+        ugv_map:
           Value: true
-        odom:
+        ugv_odom:
           Value: true
         upper_left_pillar:
           Value: false
@@ -289,8 +289,8 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        map:
-          odom:
+        ugv_map:
+          ugv_odom:
             base_footprint:
               base_link:
                 computer:
@@ -423,7 +423,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: map
+    Fixed Frame: ugv_map
     Frame Rate: 60
   Name: root
   Tools:
