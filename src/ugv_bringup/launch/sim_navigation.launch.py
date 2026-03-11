@@ -1,48 +1,21 @@
 import os
 
 from ament_index_python.packages import get_package_share_directory
-from nav2_common.launch import RewrittenYaml
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable, TimerAction
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import EnvironmentVariable, LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import EnvironmentVariable, LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
+from nav2_common.launch import RewrittenYaml
 
-
-def _resolve_default_map_yaml(bringup_share: str) -> str:
-    maps_dir = os.path.join(bringup_share, "maps")
-    numeric_maps = []
-    newest_map = None
-    newest_mtime = -1.0
-
-    if os.path.isdir(maps_dir):
-        for filename in os.listdir(maps_dir):
-            if not filename.endswith(".yaml"):
-                continue
-            path = os.path.join(maps_dir, filename)
-            if not os.path.isfile(path):
-                continue
-            stem = os.path.splitext(filename)[0]
-            if stem.isdigit():
-                numeric_maps.append((int(stem), path))
-            mtime = os.path.getmtime(path)
-            if mtime > newest_mtime:
-                newest_mtime = mtime
-                newest_map = path
-
-    if numeric_maps:
-        numeric_maps.sort(key=lambda item: item[0])
-        return numeric_maps[-1][1]
-    if newest_map is not None:
-        return newest_map
-    return os.path.join(maps_dir, "default.yaml")
+from ugv_bringup.launch_helpers import create_controller_device_ready_gate, resolve_default_map_yaml
 
 
 def generate_launch_description():
     bringup_share = get_package_share_directory("ugv_bringup")
     laser_frame = "ugv_laser"
-    default_map_yaml = _resolve_default_map_yaml(bringup_share)
+    default_map_yaml = resolve_default_map_yaml(bringup_share)
 
     headless = LaunchConfiguration("headless")
     use_sim_time = LaunchConfiguration("use_sim_time")
@@ -56,11 +29,10 @@ def generate_launch_description():
     ugv_map_frame = LaunchConfiguration("ugv_map_frame")
     global_to_ugv_map = LaunchConfiguration("global_to_ugv_map")
     publish_global_map_tf = LaunchConfiguration("publish_global_map_tf")
-    enable_dynamic_global_alignment = LaunchConfiguration("enable_dynamic_global_alignment")
     map_yaml = LaunchConfiguration("map")
     params_file = LaunchConfiguration("params_file")
+    controller_device_path = LaunchConfiguration("controller_device_path")
     use_sim_time_param = ParameterValue(use_sim_time, value_type=bool)
-    default_rviz_config = PathJoinSubstitution([bringup_share, "config", "rviz", "navigation.rviz"])
     sim_nav_params = RewrittenYaml(
         source_file=params_file,
         param_rewrites={
@@ -81,12 +53,12 @@ def generate_launch_description():
             "ugv_map_frame": ugv_map_frame,
             "global_to_ugv_map": global_to_ugv_map,
             "publish_global_map_tf": publish_global_map_tf,
-            "enable_dynamic_global_alignment": enable_dynamic_global_alignment,
             "use_teleop": "false",
             "use_foxglove": use_foxglove,
             "use_rviz": use_rviz,
             "rviz_config": rviz_config,
             "rviz_software_gl": rviz_software_gl,
+            "controller_device_path": controller_device_path,
         }.items(),
     )
 
@@ -98,11 +70,16 @@ def generate_launch_description():
             "map": map_yaml,
             "map_frame": ugv_map_frame,
             "params_file": sim_nav_params,
+            "auto_initial_pose": "true",
         }.items(),
     )
 
-    nav_launch_delayed = TimerAction(period=8.0, actions=[nav_launch])
-    
+    nav_launch_gate = create_controller_device_ready_gate(
+        controller_device_path=controller_device_path,
+        actions=[nav_launch],
+        label="ugv_sim_navigation",
+    )
+
     scan_rewriter = Node(
         package="ugv_sim_tools",
         executable="scan_frame_rewriter",
@@ -134,7 +111,7 @@ def generate_launch_description():
                 "rviz_software_gl",
                 default_value=EnvironmentVariable("UGV_RVIZ_SOFTWARE_GL", default_value="true"),
             ),
-            DeclareLaunchArgument("rviz_config", default_value=default_rviz_config),
+            DeclareLaunchArgument("rviz_config", default_value=os.path.join(bringup_share, "config", "rviz", "navigation.rviz")),
             DeclareLaunchArgument("global_frame", default_value="global"),
             DeclareLaunchArgument("ugv_map_frame", default_value="ugv_map"),
             DeclareLaunchArgument(
@@ -143,17 +120,11 @@ def generate_launch_description():
                 description="Static transform x,y,z,roll,pitch,yaw from global_frame to ugv_map_frame",
             ),
             DeclareLaunchArgument("publish_global_map_tf", default_value="true"),
-            DeclareLaunchArgument("enable_dynamic_global_alignment", default_value="false"),
-            DeclareLaunchArgument(
-                "map",
-                default_value=default_map_yaml,
-            ),
-            DeclareLaunchArgument(
-                "params_file",
-                default_value=os.path.join(bringup_share, "config", "nav2.yaml"),
-            ),
+            DeclareLaunchArgument("controller_device_path", default_value="/tmp/ugv_controller"),
+            DeclareLaunchArgument("map", default_value=default_map_yaml),
+            DeclareLaunchArgument("params_file", default_value=os.path.join(bringup_share, "config", "nav2.yaml")),
             sim_launch,
             scan_rewriter,
-            nav_launch_delayed,
+            nav_launch_gate,
         ]
     )

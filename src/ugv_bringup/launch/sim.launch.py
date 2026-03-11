@@ -1,21 +1,22 @@
 import os
+import shutil
 import subprocess
 import tempfile
 import xml.etree.ElementTree as element_tree
 from functools import partial
 
-from ament_index_python.packages import get_package_prefix, get_package_share_directory
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
     IncludeLaunchDescription,
-    LogInfo,
     OpaqueFunction,
+    RegisterEventHandler,
     SetEnvironmentVariable,
     SetLaunchConfiguration,
-    TimerAction,
 )
 from launch.conditions import IfCondition, UnlessCondition
+from launch.event_handlers import OnShutdown
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, EnvironmentVariable, LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
@@ -24,12 +25,13 @@ from launch_ros.parameter_descriptions import ParameterValue
 from sim_worlds.launch_common import (
     create_launch_summary_action,
     create_rviz_conditions,
-    create_static_transform_node,
-    create_true_only_notice_action,
     is_true,
     normalize_clock_mode,
-    parse_six_dof,
     resolve_world_launch_configurations,
+)
+from ugv_bringup.launch_helpers import (
+    create_global_to_ugv_map_tf_action,
+    create_controller_device_ready_gate,
 )
 
 SIM_WORLDS_SHARE = get_package_share_directory("sim_worlds")
@@ -44,21 +46,19 @@ def generate_launch_description():
     camera_color_optical_frame = "ugv_camera_color_optical_frame"
     camera_ir_optical_frame = "ugv_camera_ir_optical_frame"
 
-    pkg_prefix = get_package_prefix("ugv_bringup")
     bringup_share = get_package_share_directory("ugv_bringup")
+    description_share = get_package_share_directory("ugv_description")
     sim_worlds_share = get_package_share_directory("sim_worlds")
-    workspace_root = os.path.dirname(os.path.dirname(pkg_prefix))
-    bringup_src = os.path.join(workspace_root, "src", "ugv_bringup")
-    description_src = os.path.join(workspace_root, "src", "ugv_description")
-
-    ekf_config_path = os.path.join(bringup_src, "config", "ekf.yaml")
-    bridge_cfg = os.path.join(bringup_src, "config", "ros_gz_bridge.yaml")
-    foxglove_bridge_config_path = os.path.join(bringup_src, "config", "foxglove", "bridge.yaml")
-    default_rviz_config = os.path.join(bringup_src, "config", "rviz", "sim.rviz")
     watchdog_share = get_package_share_directory("ugv_safety_watchdog")
-    watchdog_config_path = os.path.join(watchdog_share, "config", "safety_watchdog.yaml")
     default_gz_partition = f"ugv_{os.getpid()}"
-    urdf_file = os.path.join(description_src, "urdf", "ugv_sim.xacro")
+
+    ekf_config_path = os.path.join(bringup_share, "config", "ekf.yaml")
+    bridge_cfg = os.path.join(bringup_share, "config", "ros_gz_bridge.yaml")
+    foxglove_bridge_config_path = os.path.join(bringup_share, "config", "foxglove", "bridge.yaml")
+    default_rviz_config = os.path.join(bringup_share, "config", "rviz", "sim.rviz")
+    watchdog_config_path = os.path.join(watchdog_share, "config", "safety_watchdog.yaml")
+    twist_mux_config_path = os.path.join(bringup_share, "config", "twist_mux.yaml")
+    urdf_file = os.path.join(description_share, "urdf", "ugv_sim.xacro")
 
     world = LaunchConfiguration("world")
     resolved_world_id = LaunchConfiguration("resolved_world_id")
@@ -77,25 +77,22 @@ def generate_launch_description():
     launch_ros_clock = LaunchConfiguration("launch_ros_clock")
     clock_mode = LaunchConfiguration("clock_mode")
     effective_clock_mode = LaunchConfiguration("effective_clock_mode")
-
     use_sim_tf = LaunchConfiguration("use_sim_tf")
     global_frame = LaunchConfiguration("global_frame")
     ugv_map_frame = LaunchConfiguration("ugv_map_frame")
     global_to_ugv_map = LaunchConfiguration("global_to_ugv_map")
     publish_global_map_tf = LaunchConfiguration("publish_global_map_tf")
     use_sim_camera = LaunchConfiguration("use_sim_camera")
-    controller_port = LaunchConfiguration("controller_port")
+    controller_device_path = LaunchConfiguration("controller_device_path")
     use_teleop = LaunchConfiguration("use_teleop")
     keyboard_enabled = LaunchConfiguration("keyboard_enabled")
     keyboard_backend = LaunchConfiguration("keyboard_backend")
     use_foxglove = LaunchConfiguration("use_foxglove")
-    base_driver_start_delay = LaunchConfiguration("base_driver_start_delay")
     publish_map_tf = LaunchConfiguration("publish_map_tf")
     robot_prefix_cfg = LaunchConfiguration("robot_prefix")
     ugv_model_sdf_path = LaunchConfiguration("ugv_model_sdf_path")
     ugv_spawn_entity_name = LaunchConfiguration("ugv_spawn_entity_name")
-    enable_dynamic_global_alignment = LaunchConfiguration("enable_dynamic_global_alignment")
-    base_driver_wait_logged = LaunchConfiguration("base_driver_wait_logged")
+    generated_artifact_dir = LaunchConfiguration("generated_artifact_dir")
 
     robot_description = ParameterValue(
         Command(["xacro", " ", urdf_file, " prefix:=", robot_prefix_cfg]),
@@ -103,10 +100,7 @@ def generate_launch_description():
     )
 
     resolve_world_action = OpaqueFunction(
-        function=partial(
-            resolve_world_launch_configurations,
-            package_share=SIM_WORLDS_SHARE,
-        )
+        function=partial(resolve_world_launch_configurations, package_share=SIM_WORLDS_SHARE)
     )
 
     def resolve_effective_clock_mode(context):
@@ -120,19 +114,12 @@ def generate_launch_description():
             ]
 
         legacy_launch_ros_clock = launch_ros_clock.perform(context)
-        actions = [
+        return [
             SetLaunchConfiguration(
                 "effective_clock_mode",
                 "internal" if is_true(legacy_launch_ros_clock) else "external",
             )
         ]
-        if not is_true(legacy_launch_ros_clock):
-            actions.append(
-                LogInfo(
-                    msg="[ugv_sim] 'launch_ros_clock' is deprecated; use 'clock_mode:=external' instead."
-                )
-            )
-        return actions
 
     resolve_clock_mode_action = OpaqueFunction(function=resolve_effective_clock_mode)
 
@@ -159,16 +146,25 @@ def generate_launch_description():
 
         model_root = element_tree.fromstring(model_sdf)
         model_element = model_root if model_root.tag == "model" else model_root.find("model")
-        entity_name = "duojin01"
-        if model_element is not None and model_element.attrib.get("name"):
-            entity_name = model_element.attrib["name"]
+        entity_name = model_element.attrib.get("name", "duojin01") if model_element is not None else "duojin01"
 
         return [
+            SetLaunchConfiguration("generated_artifact_dir", temp_dir),
             SetLaunchConfiguration("ugv_model_sdf_path", model_sdf_path),
             SetLaunchConfiguration("ugv_spawn_entity_name", entity_name),
         ]
 
     prepare_ugv_model_action = OpaqueFunction(function=prepare_ugv_model_sdf)
+
+    def cleanup_generated_artifacts(context, *args, **kwargs):
+        artifact_dir = generated_artifact_dir.perform(context)
+        if artifact_dir and os.path.isdir(artifact_dir):
+            shutil.rmtree(artifact_dir, ignore_errors=True)
+        return []
+
+    cleanup_generated_artifacts_action = RegisterEventHandler(
+        OnShutdown(on_shutdown=[OpaqueFunction(function=cleanup_generated_artifacts)])
+    )
 
     gz_sim_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(bringup_share, "launch", "gz_sim.launch.py")),
@@ -188,47 +184,43 @@ def generate_launch_description():
         executable="create",
         name="spawn_ugv_model",
         output="screen",
-        parameters=[
-            {
-                "world": resolved_gz_world_name,
-                "file": ugv_model_sdf_path,
-                "name": ugv_spawn_entity_name,
-                "allow_renaming": False,
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "R": 0.0,
-                "P": 0.0,
-                "Y": 0.0,
-            }
+        arguments=[
+            "-world",
+            resolved_gz_world_name,
+            "-file",
+            ugv_model_sdf_path,
+            "-name",
+            ugv_spawn_entity_name,
+            "-allow_renaming",
+            "false",
+            "-x",
+            "0.0",
+            "-y",
+            "0.0",
+            "-z",
+            "0.0",
+            "-R",
+            "0.0",
+            "-P",
+            "0.0",
+            "-Y",
+            "0.0",
         ],
     )
 
-    internal_clock_condition = IfCondition(
-        PythonExpression(['"', effective_clock_mode, '" == "internal"'])
-    )
+    internal_clock_condition = IfCondition(PythonExpression(['"', effective_clock_mode, '" == "internal"']))
     sim_clock_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(sim_worlds_share, "launch", "sim_clock.launch.py")),
-        launch_arguments={
-            "gz_partition": gz_partition,
-        }.items(),
+        launch_arguments={"gz_partition": gz_partition}.items(),
         condition=internal_clock_condition,
     )
 
-    def create_global_to_ugv_map_tf(context):
-        if not is_true(publish_global_map_tf.perform(context)):
-            return []
-
-        return [
-            create_static_transform_node(
-                node_name="global_to_ugv_map_tf",
-                transform_values=parse_six_dof(global_to_ugv_map.perform(context), "global_to_ugv_map"),
-                parent_frame=global_frame.perform(context),
-                child_frame=ugv_map_frame.perform(context),
-            )
-        ]
-
-    global_to_ugv_map_tf_action = OpaqueFunction(function=create_global_to_ugv_map_tf)
+    global_to_ugv_map_tf_action = create_global_to_ugv_map_tf_action(
+        global_frame=global_frame,
+        ugv_map_frame=ugv_map_frame,
+        global_to_ugv_map=global_to_ugv_map,
+        publish_global_map_tf=publish_global_map_tf,
+    )
 
     robot_state_publisher = Node(
         package="robot_state_publisher",
@@ -285,9 +277,10 @@ def generate_launch_description():
         parameters=[
             {
                 "use_sim_time": False,
-                "pty_link_path": controller_port,
+                "controller_device_path": controller_device_path,
                 "odom_topic": "/ugv/sim/odom",
-                "cmd_vel_out_topic": "/ugv/cmd_vel_sim",
+                "command_topic": "/ugv/cmd_vel_safe",
+                "sim_command_topic": "/ugv/cmd_vel_sim",
             }
         ],
     )
@@ -316,6 +309,7 @@ def generate_launch_description():
         arguments=["0", "0", "0", "0", "0", "0", ugv_map_frame, odom_frame],
         condition=IfCondition(publish_map_tf),
     )
+
     orbbec_topic_compat = Node(
         package="ugv_sim_tools",
         executable="orbbec_topic_compat_node",
@@ -332,8 +326,6 @@ def generate_launch_description():
         ],
         condition=IfCondition(use_sim_camera),
     )
-
-    twist_mux_config_path = os.path.join(bringup_src, "config", "twist_mux.yaml")
 
     twist_mux_node = Node(
         package="twist_mux",
@@ -352,37 +344,19 @@ def generate_launch_description():
         parameters=[
             {
                 "use_sim_time": use_sim_time_param,
-                "usart_port_name": controller_port,
+                "usart_port_name": controller_device_path,
                 "odom_frame_id": odom_frame,
                 "robot_frame_id": base_footprint_frame,
                 "imu_frame_id": imu_frame,
             }
         ],
-        remappings=[("/ugv/cmd_vel", "/ugv/cmd_vel_safe")],
+        remappings=[("/ugv/cmd_vel", "/ugv/cmd_vel_driver_unused")],
     )
 
-    def launch_base_driver_when_ready(context):
-        controller_port_path = controller_port.perform(context)
-        if os.path.exists(controller_port_path):
-            return [
-                LogInfo(msg=f"[ugv_sim] controller port ready at {controller_port_path}; starting ugv_base_driver."),
-                base_driver,
-            ]
-
-        actions = []
-        if not is_true(base_driver_wait_logged.perform(context)):
-            actions.extend([
-                SetLaunchConfiguration("base_driver_wait_logged", "true"),
-                LogInfo(msg=f"[ugv_sim] waiting for controller port: {controller_port_path}"),
-            ])
-        actions.append(
-            TimerAction(period=0.5, actions=[OpaqueFunction(function=launch_base_driver_when_ready)])
-        )
-        return actions
-
-    base_driver_delayed = TimerAction(
-        period=base_driver_start_delay,
-        actions=[OpaqueFunction(function=launch_base_driver_when_ready)],
+    base_driver_gate = create_controller_device_ready_gate(
+        controller_device_path=controller_device_path,
+        actions=[base_driver],
+        label="ugv_sim",
     )
 
     safety_watchdog = Node(
@@ -390,10 +364,7 @@ def generate_launch_description():
         executable="safety_watchdog_node",
         name="safety_watchdog",
         output="screen",
-        parameters=[
-            watchdog_config_path,
-            {"use_sim_time": use_sim_time_param},
-        ],
+        parameters=[watchdog_config_path, {"use_sim_time": use_sim_time_param}],
     )
 
     ekf_node = Node(
@@ -413,6 +384,7 @@ def generate_launch_description():
         parameters=[foxglove_bridge_config_path, {"use_sim_time": use_sim_time_param}],
         condition=IfCondition(use_foxglove),
     )
+
     rviz_soft_condition, rviz_hw_condition = create_rviz_conditions(use_rviz, rviz_software_gl)
     rviz_node = Node(
         package="rviz2",
@@ -449,12 +421,6 @@ def generate_launch_description():
             ("gz_world", resolved_gz_world_name),
         ],
     )
-    no_op_alignment_notice = create_true_only_notice_action(
-        "ugv_sim",
-        argument_name="enable_dynamic_global_alignment",
-        argument_value=enable_dynamic_global_alignment,
-        message="The dynamic global alignment hook has no runtime consumer in the current stack.",
-    )
 
     return LaunchDescription(
         [
@@ -483,7 +449,6 @@ def generate_launch_description():
                 default_value="true",
                 description="Whether to publish static transform from global_frame to ugv_map_frame",
             ),
-            DeclareLaunchArgument("enable_dynamic_global_alignment", default_value="false"),
             DeclareLaunchArgument(
                 "gz_partition",
                 default_value=EnvironmentVariable("UGV_GZ_PARTITION", default_value=default_gz_partition),
@@ -514,19 +479,15 @@ def generate_launch_description():
             DeclareLaunchArgument("rviz_config", default_value=default_rviz_config),
             DeclareLaunchArgument("use_sim_tf", default_value="true"),
             DeclareLaunchArgument("publish_map_tf", default_value="true"),
-            DeclareLaunchArgument(
-                "controller_port",
-                default_value=EnvironmentVariable("UGV_CONTROLLER_PORT", default_value="/tmp/ugv_controller"),
-            ),
+            DeclareLaunchArgument("controller_device_path", default_value="/tmp/ugv_controller"),
             DeclareLaunchArgument("use_teleop", default_value="true"),
             DeclareLaunchArgument("keyboard_enabled", default_value="false"),
             DeclareLaunchArgument("keyboard_backend", default_value="tty"),
             DeclareLaunchArgument("use_foxglove", default_value="false"),
-            DeclareLaunchArgument("base_driver_start_delay", default_value="6.0"),
             DeclareLaunchArgument("effective_clock_mode", default_value=""),
+            DeclareLaunchArgument("generated_artifact_dir", default_value=""),
             DeclareLaunchArgument("ugv_model_sdf_path", default_value=""),
             DeclareLaunchArgument("ugv_spawn_entity_name", default_value="duojin01"),
-            DeclareLaunchArgument("base_driver_wait_logged", default_value="false"),
             SetEnvironmentVariable("USE_SIM_TIME", use_sim_time),
             SetEnvironmentVariable("UGV_SIM_CAMERA_ENABLED", use_sim_camera),
             SetEnvironmentVariable("UGV_SIM_PROFILE", sim_profile),
@@ -540,9 +501,9 @@ def generate_launch_description():
             SetEnvironmentVariable("QT_OPENGL", "software", condition=IfCondition(software_gl)),
             resolve_world_action,
             resolve_clock_mode_action,
-            no_op_alignment_notice,
             summary_action,
             prepare_ugv_model_action,
+            cleanup_generated_artifacts_action,
             gz_sim_launch,
             sim_clock_launch,
             spawn_ugv_model,
@@ -555,7 +516,7 @@ def generate_launch_description():
             sim_odom_to_tf,
             map_to_odom_tf,
             twist_mux_node,
-            base_driver_delayed,
+            base_driver_gate,
             safety_watchdog,
             ekf_node,
             joy_teleop_launch,

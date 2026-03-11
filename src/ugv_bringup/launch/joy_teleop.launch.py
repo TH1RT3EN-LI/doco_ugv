@@ -11,7 +11,8 @@ from launch_ros.parameter_descriptions import ParameterValue
 def generate_launch_description():
     bringup_share = get_package_share_directory("ugv_bringup")
     teleop_share = get_package_share_directory("ugv_teleop")
-    
+
+    joy_config_path = os.path.join(bringup_share, "config", "joy.yaml")
     joy_launcher_config_path = os.path.join(teleop_share, "config", "joy_launcher.yaml")
     joy_axis_selector_config_path = os.path.join(teleop_share, "config", "joy_axis_selector.yaml")
     joy_teleop_normal_config_path = os.path.join(bringup_share, "config", "joy_teleop_normal.yaml")
@@ -25,17 +26,10 @@ def generate_launch_description():
         package="joy",
         executable="joy_node",
         name="joy_node",
-        parameters=[
-            {
-                "use_sim_time": use_sim_time_param,
-                "device_id": 0,
-                "deadzone": 0.12,
-                "autorepeat_rate": 20.0,
-            }
-        ],
-        remappings=[("/joy", "/ugv/joy_raw")],  
+        parameters=[joy_config_path, {"use_sim_time": use_sim_time_param}],
+        remappings=[("/joy", "/ugv/joy_raw")],
     )
-    
+
     joy_axis_selector = Node(
         package="ugv_teleop",
         executable="joy_axis_selector_node",

@@ -83,4 +83,23 @@ ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_include_directories(include)
 ament_export_dependencies(rclcpp sensor_msgs geometry_msgs rcl_interfaces)
 
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+
+  ament_add_gtest(test_joy_axis_selector_logic
+    test/test_joy_axis_selector_logic.cpp
+  )
+  if(TARGET test_joy_axis_selector_logic)
+    target_link_libraries(test_joy_axis_selector_logic ugv_teleop_core)
+    ament_target_dependencies(test_joy_axis_selector_logic sensor_msgs)
+  endif()
+
+  ament_add_gtest(test_joy_launcher_logic
+    test/test_joy_launcher_logic.cpp
+  )
+  if(TARGET test_joy_launcher_logic)
+    target_link_libraries(test_joy_launcher_logic ugv_teleop_core)
+  endif()
+endif()
+
 ament_package()

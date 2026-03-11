@@ -46,7 +46,7 @@ class SafetyWatchdogNode : public rclcpp::Node {
     lock_pub_ = create_publisher<std_msgs::msg::Bool>("/ugv/watchdog/lock", lock_qos);
     status_pub_ = create_publisher<std_msgs::msg::String>("/ugv/watchdog/status", 10);
 
-    PublishLock(false);
+    PublishLock(false, true);
 
     odom_sub_ = create_subscription<nav_msgs::msg::Odometry>(
         "/ugv/odom", 10,
@@ -122,10 +122,21 @@ class SafetyWatchdogNode : public rclcpp::Node {
     return stream.str();
   }
 
-  void PublishLock(bool locked) {
+  void PublishLock(bool locked, bool force = false) {
+    const auto current_time = now();
+    const bool state_changed = !last_published_lock_.has_value() || last_published_lock_.value() != locked;
+    const bool republish_due =
+        locked && last_lock_publish_time_.has_value() &&
+        (current_time - last_lock_publish_time_.value()).seconds() >= 1.0;
+    if (!force && !state_changed && !republish_due) {
+      return;
+    }
+
     std_msgs::msg::Bool msg;
     msg.data = locked;
     lock_pub_->publish(msg);
+    last_published_lock_ = locked;
+    last_lock_publish_time_ = current_time;
   }
 
   void PublishStatus(const std::string& status) {
@@ -135,6 +146,56 @@ class SafetyWatchdogNode : public rclcpp::Node {
   }
 
   double SecondsSince(const rclcpp::Time& timestamp) const { return (now() - timestamp).seconds(); }
+
+  bool CheckTopicTimeout(
+      const std::optional<rclcpp::Time>& last_message_time,
+      double timeout_sec,
+      const char* reason,
+      const std::string& missing_suffix) {
+    if (!last_message_time.has_value()) {
+      TriggerEstop(std::string(reason) + missing_suffix);
+      return true;
+    }
+
+    const double age = SecondsSince(last_message_time.value());
+    if (age > timeout_sec) {
+      TriggerEstop(std::string(reason) + " (已 " + FormatFixed(age, 1) + "s 未收到)");
+      return true;
+    }
+
+    return false;
+  }
+
+  void UpdateTimeoutDiag(
+      diagnostic_updater::DiagnosticStatusWrapper& stat,
+      bool enabled,
+      const std::optional<rclcpp::Time>& last_message_time,
+      double timeout_sec) {
+    if (!enabled) {
+      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "检查已禁用");
+      return;
+    }
+
+    if (!last_message_time.has_value()) {
+      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "等待首条消息");
+      return;
+    }
+
+    const double age = SecondsSince(last_message_time.value());
+    stat.add("最后消息距今 (s)", FormatFixed(age, 2));
+    stat.add("超时阈值 (s)", FormatFixed(timeout_sec, 1));
+    if (age > timeout_sec) {
+      stat.summary(
+          diagnostic_msgs::msg::DiagnosticStatus::ERROR,
+          "超时 (" + FormatFixed(age, 1) + "s > " + FormatFixed(timeout_sec, 1) + "s)");
+    } else if (age > timeout_sec * 0.5) {
+      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN,
+                   "接近超时 (" + FormatFixed(age, 1) + "s)");
+    } else {
+      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK,
+                   "正常 (" + FormatFixed(age, 2) + "s)");
+    }
+  }
 
   void BatteryCallback(const std_msgs::msg::Float32& battery_msg) {
     last_battery_time_ = now();
@@ -175,11 +236,12 @@ class SafetyWatchdogNode : public rclcpp::Node {
       trigger_reason_.clear();
       trigger_time_.reset();
       last_reminder_time_.reset();
-      PublishLock(false);
+      PublishLock(false, true);
       start_time_ = now();
       last_odom_time_.reset();
       last_imu_time_.reset();
       last_battery_time_.reset();
+      last_lock_publish_time_.reset();
       battery_window_.clear();
       battery_avg_.reset();
       tilt_consecutive_count_ = 0;
@@ -217,41 +279,19 @@ class SafetyWatchdogNode : public rclcpp::Node {
     }
 
     if (enable_odom_check_) {
-      if (!last_odom_time_.has_value()) {
-        TriggerEstop(std::string(kReasonOdomTimeout) + " (宽限期后仍未收到)");
-        return;
-      }
-
-      const double age = SecondsSince(last_odom_time_.value());
-      if (age > odom_timeout_sec_) {
-        TriggerEstop(std::string(kReasonOdomTimeout) + " (已 " + FormatFixed(age, 1) + "s 未收到)");
+      if (CheckTopicTimeout(last_odom_time_, odom_timeout_sec_, kReasonOdomTimeout, " (宽限期后仍未收到)")) {
         return;
       }
     }
 
     if (enable_imu_check_) {
-      if (!last_imu_time_.has_value()) {
-        TriggerEstop(std::string(kReasonImuTimeout) + " (宽限期后仍未收到)");
-        return;
-      }
-
-      const double age = SecondsSince(last_imu_time_.value());
-      if (age > imu_timeout_sec_) {
-        TriggerEstop(std::string(kReasonImuTimeout) + " (已 " + FormatFixed(age, 1) + "s 未收到)");
+      if (CheckTopicTimeout(last_imu_time_, imu_timeout_sec_, kReasonImuTimeout, " (宽限期后仍未收到)")) {
         return;
       }
     }
 
     if (enable_battery_check_) {
-      if (!last_battery_time_.has_value()) {
-        TriggerEstop(std::string(kReasonBatteryTimeout) + " (宽限期后仍未收到)");
-        return;
-      }
-
-      const double age = SecondsSince(last_battery_time_.value());
-      if (age > battery_timeout_sec_) {
-        TriggerEstop(std::string(kReasonBatteryTimeout) + " (已 " + FormatFixed(age, 1) +
-                     "s 未收到)");
+      if (CheckTopicTimeout(last_battery_time_, battery_timeout_sec_, kReasonBatteryTimeout, " (宽限期后仍未收到)")) {
         return;
       }
     }
@@ -298,9 +338,7 @@ class SafetyWatchdogNode : public rclcpp::Node {
     trigger_time_ = now();
     last_reminder_time_ = trigger_time_;
 
-    for (int i = 0; i < 10; ++i) {
-      PublishLock(true);
-    }
+    PublishLock(true, true);
 
     const auto separator = std::string(60, '!');
     RCLCPP_ERROR(get_logger(), "%s", separator.c_str());
@@ -332,84 +370,15 @@ class SafetyWatchdogNode : public rclcpp::Node {
   }
 
   void DiagOdom(diagnostic_updater::DiagnosticStatusWrapper& stat) {
-    if (!enable_odom_check_) {
-      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "检查已禁用");
-      return;
-    }
-
-    if (!last_odom_time_.has_value()) {
-      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "等待首条消息");
-      return;
-    }
-
-    const double age = SecondsSince(last_odom_time_.value());
-    stat.add("最后消息距今 (s)", FormatFixed(age, 2));
-    stat.add("超时阈值 (s)", FormatFixed(odom_timeout_sec_, 1));
-    if (age > odom_timeout_sec_) {
-      stat.summary(
-          diagnostic_msgs::msg::DiagnosticStatus::ERROR,
-          "超时 (" + FormatFixed(age, 1) + "s > " + FormatFixed(odom_timeout_sec_, 1) + "s)");
-    } else if (age > odom_timeout_sec_ * 0.5) {
-      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN,
-                   "接近超时 (" + FormatFixed(age, 1) + "s)");
-    } else {
-      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK,
-                   "正常 (" + FormatFixed(age, 2) + "s)");
-    }
+    UpdateTimeoutDiag(stat, enable_odom_check_, last_odom_time_, odom_timeout_sec_);
   }
 
   void DiagImu(diagnostic_updater::DiagnosticStatusWrapper& stat) {
-    if (!enable_imu_check_) {
-      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "检查已禁用");
-      return;
-    }
-
-    if (!last_imu_time_.has_value()) {
-      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "等待首条消息");
-      return;
-    }
-
-    const double age = SecondsSince(last_imu_time_.value());
-    stat.add("最后消息距今 (s)", FormatFixed(age, 2));
-    stat.add("超时阈值 (s)", FormatFixed(imu_timeout_sec_, 1));
-    if (age > imu_timeout_sec_) {
-      stat.summary(
-          diagnostic_msgs::msg::DiagnosticStatus::ERROR,
-          "超时 (" + FormatFixed(age, 1) + "s > " + FormatFixed(imu_timeout_sec_, 1) + "s)");
-    } else if (age > imu_timeout_sec_ * 0.5) {
-      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN,
-                   "接近超时 (" + FormatFixed(age, 1) + "s)");
-    } else {
-      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK,
-                   "正常 (" + FormatFixed(age, 2) + "s)");
-    }
+    UpdateTimeoutDiag(stat, enable_imu_check_, last_imu_time_, imu_timeout_sec_);
   }
 
   void DiagBatteryTopic(diagnostic_updater::DiagnosticStatusWrapper& stat) {
-    if (!enable_battery_check_) {
-      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "检查已禁用");
-      return;
-    }
-
-    if (!last_battery_time_.has_value()) {
-      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "等待首条消息");
-      return;
-    }
-
-    const double age = SecondsSince(last_battery_time_.value());
-    stat.add("最后消息距今 (s)", FormatFixed(age, 2));
-    stat.add("超时阈值 (s)", FormatFixed(battery_timeout_sec_, 1));
-    if (age > battery_timeout_sec_) {
-      stat.summary(
-          diagnostic_msgs::msg::DiagnosticStatus::ERROR,
-          "超时 (" + FormatFixed(age, 1) + "s > " + FormatFixed(battery_timeout_sec_, 1) + "s)");
-    } else if (age > battery_timeout_sec_ * 0.5) {
-      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN,
-                   "接近超时 (" + FormatFixed(age, 1) + "s)");
-    } else {
-      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK,
-                   "正常 (" + FormatFixed(age, 2) + "s)");
-    }
+    UpdateTimeoutDiag(stat, enable_battery_check_, last_battery_time_, battery_timeout_sec_);
   }
 
   void DiagBatteryVoltage(diagnostic_updater::DiagnosticStatusWrapper& stat) {
@@ -490,6 +459,8 @@ class SafetyWatchdogNode : public rclcpp::Node {
   std::optional<rclcpp::Time> trigger_time_;
   std::optional<rclcpp::Time> last_reminder_time_;
   rclcpp::Time start_time_;
+  std::optional<bool> last_published_lock_;
+  std::optional<rclcpp::Time> last_lock_publish_time_;
 
   std::optional<rclcpp::Time> last_odom_time_;
   std::optional<rclcpp::Time> last_imu_time_;

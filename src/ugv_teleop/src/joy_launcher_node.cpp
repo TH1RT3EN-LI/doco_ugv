@@ -124,12 +124,7 @@ public:
     }
     shutdown_done_ = true;
 
-    for (const auto & [button, pid] : running_pids_) {
-      (void)button;
-      stop_process_tree(pid);
-      reap_process(pid);
-    }
-    running_pids_.clear();
+    stop_all_running_processes();
     publish_rumble(0.0, 0.0);
   }
 
@@ -222,6 +217,67 @@ private:
     }
   }
 
+  void stop_running_process(int button)
+  {
+    const auto running_it = running_pids_.find(button);
+    if (running_it == running_pids_.end()) {
+      return;
+    }
+
+    if (is_process_alive(running_it->second)) {
+      RCLCPP_INFO(this->get_logger(), "Killing previous process for button %d", button);
+      stop_process_tree(running_it->second);
+      reap_process(running_it->second);
+    }
+    running_pids_.erase(running_it);
+  }
+
+  void stop_all_running_processes()
+  {
+    for (const auto & [button, pid] : running_pids_) {
+      (void)button;
+      stop_process_tree(pid);
+      reap_process(pid);
+    }
+    running_pids_.clear();
+  }
+
+  bool start_command_process(int button, const std::string & command)
+  {
+    const auto pid = start_shell_process(command);
+    if (!pid.has_value()) {
+      RCLCPP_ERROR(
+        this->get_logger(),
+        "Failed to start command for button %d: %s",
+        button,
+        std::strerror(errno));
+      return false;
+    }
+
+    running_pids_[button] = pid.value();
+    return true;
+  }
+
+  void handle_process_exit(int button, int status)
+  {
+    if (WIFEXITED(status)) {
+      const int exit_code = WEXITSTATUS(status);
+      if (exit_code == 0) {
+        RCLCPP_INFO(this->get_logger(), "Command for button %d finished successfully", button);
+        if (success_feedback_buttons_.count(button) > 0U) {
+          publish_rumble(success_feedback_intensity_, success_feedback_duration_sec_);
+        }
+      } else {
+        RCLCPP_WARN(this->get_logger(), "Command for button %d exited with code %d", button, exit_code);
+      }
+      return;
+    }
+
+    if (WIFSIGNALED(status)) {
+      RCLCPP_WARN(this->get_logger(), "Command for button %d killed by signal %d", button, WTERMSIG(status));
+    }
+  }
+
   void joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
   {
     if (prev_buttons_.empty()) {
@@ -284,29 +340,8 @@ private:
       publish_rumble(trigger_feedback_intensity_, trigger_feedback_duration_sec_);
     }
 
-    const auto running_it = running_pids_.find(button);
-    if (running_it != running_pids_.end()) {
-      if (is_process_alive(running_it->second)) {
-        RCLCPP_INFO(
-          this->get_logger(),
-          "Killing previous process for button %d",
-          button);
-        stop_process_tree(running_it->second);
-        reap_process(running_it->second);
-      }
-      running_pids_.erase(running_it);
-    }
-
-    const auto pid = start_shell_process(command);
-    if (!pid.has_value()) {
-      RCLCPP_ERROR(
-        this->get_logger(),
-        "Failed to start command for button %d: %s",
-        button,
-        std::strerror(errno));
-      return;
-    }
-    running_pids_[button] = pid.value();
+    stop_running_process(button);
+    (void)start_command_process(button, command);
   }
 
   void poll_running_processes()
@@ -331,31 +366,7 @@ private:
         continue;
       }
 
-      if (WIFEXITED(status)) {
-        const int exit_code = WEXITSTATUS(status);
-        if (exit_code == 0) {
-          RCLCPP_INFO(
-            this->get_logger(),
-            "Command for button %d finished successfully",
-            button);
-          if (success_feedback_buttons_.count(button) > 0U) {
-            publish_rumble(success_feedback_intensity_, success_feedback_duration_sec_);
-          }
-        } else {
-          RCLCPP_WARN(
-            this->get_logger(),
-            "Command for button %d exited with code %d",
-            button,
-            exit_code);
-        }
-      } else if (WIFSIGNALED(status)) {
-        RCLCPP_WARN(
-          this->get_logger(),
-          "Command for button %d killed by signal %d",
-          button,
-          WTERMSIG(status));
-      }
-
+      handle_process_exit(button, status);
       it = running_pids_.erase(it);
     }
   }

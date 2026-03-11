@@ -2,16 +2,15 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
-#include <memory>
-#include <string>
 #include <algorithm>
 #include <cstddef>
-#include <limits>
 #include <atomic>
+#include <memory>
 #include <mutex>
+#include <functional>
+#include <string>
 #include <vector>
 #include <array>
-#include <functional>
 
 #include "io_context/io_context.hpp"
 #include "serial_driver/serial_port.hpp"
@@ -27,6 +26,7 @@
 
 #include "ugv_base_driver/quaternion_solution.hpp"
 #include "ugv_base_driver/driver_types.hpp"
+#include "ugv_base_driver/protocol.hpp"
 
 using namespace std::chrono_literals;
 
@@ -101,7 +101,6 @@ public:
         timer_ = this->create_wall_timer(period, std::bind(&Duojin01BaseDriverNode::on_timer, this));
 
         last_time_ = this->now();
-        last_frame_time_ = this->now();
         last_serial_rx_steady_ns_.store(steady_now_ns(), std::memory_order_release);
 
         RCLCPP_INFO(this->get_logger(), "ugv_base_driver node started");
@@ -143,60 +142,15 @@ public:
     }
 
 private:
-    /**
-     * @brief 异或校验
-     *
-     * @author litianshun (litianshun.cn@gmail.com)
-     * @date 2026-01-25
-     */
-    static inline uint8_t xor_checksum(const uint8_t *data, std::size_t len) noexcept
-    {
-        uint8_t sum = 0;
-        for (std::size_t i = 0; i < len; ++i)
-            sum ^= data[i];
-        return sum;
-    }
-    /**
-     * @brief 用米为单位的浮点数构造毫米单位的整数
-     *
-     * @author litianshun (litianshun.cn@gmail.com)
-     * @date 2026-01-25
-     */
-    static inline int16_t saturate_i16_from_scaled(float value, float scale) noexcept
-    {
-        const float scaled_f = value * scale;
-
-        if (!std::isfinite(scaled_f))
-        {
-            return 0;
-        }
-        const int32_t scaled = static_cast<int32_t>(std::lround(scaled_f));
-
-        if (scaled > std::numeric_limits<int16_t>::max())
-            return std::numeric_limits<int16_t>::max();
-        if (scaled < std::numeric_limits<int16_t>::min())
-            return std::numeric_limits<int16_t>::min();
-        return static_cast<int16_t>(scaled);
-    }
-    /**
-     * @brief 编码hl
-     *
-     * @author litianshun (litianshun.cn@gmail.com)
-     * @date 2026-01-25
-     */
-    static inline void encode_i16_be(int16_t v, uint8_t &high, uint8_t &low) noexcept
-    {
-        const uint16_t u = static_cast<uint16_t>(v);
-        high = static_cast<uint8_t>((u >> 8) & 0xFF);
-        low = static_cast<uint8_t>(u & 0xFF);
-    }
-    /**
-     * @brief 获取单调时钟纳秒，用于跨线程的串口活跃时间戳
-     */
     static inline int64_t steady_now_ns() noexcept
     {
         return std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::steady_clock::now().time_since_epoch()).count();
+    }
+    void transmit_frame(const std::array<uint8_t, duojin01::SEND_DATA_SIZE> &frame)
+    {
+        std::copy(frame.begin(), frame.end(), tx_buffer_.begin());
+        serial_->send(tx_buffer_);
     }
     /**
      * @brief 回调控制下位机；对应源先的Cmd_Vel_Callback，但是这里对部分东西进行了一层抽象，作为工具方法定义在上
@@ -206,31 +160,13 @@ private:
      */
     void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg)
     {
-        auto &tx = send_data_.tx;
-
-        tx[0] = duojin01::FRAME_HEADER;
-        tx[1] = 0;
-        tx[2] = 0;
-
-        constexpr float k_mmps = 1000.0f;
-
-        const int16_t vx_mmps = saturate_i16_from_scaled(static_cast<float>(msg->linear.x), k_mmps);
-        const int16_t vy_mmps = saturate_i16_from_scaled(static_cast<float>(msg->linear.y), k_mmps);
-        const int16_t wz_mradps = saturate_i16_from_scaled(static_cast<float>(msg->angular.z), k_mmps); // 这里和源码一致保持对角速度的缩放，由于下位机的具体逻辑几近不可知，暂时保持一致避免出现错误
-
-        encode_i16_be(vx_mmps, tx[3], tx[4]);
-        encode_i16_be(vy_mmps, tx[5], tx[6]);
-        encode_i16_be(wz_mradps, tx[7], tx[8]);
-
-        tx[9] = xor_checksum(tx.data(), 9);
-        tx[10] = duojin01::FRAME_TAIL;
+        const auto frame = duojin01::build_command_frame(msg->linear.x, msg->linear.y, msg->angular.z);
 
         try
         {
             if (serial_ && serial_->is_open())
             {
-                std::vector<uint8_t> buf(tx.begin(), tx.end());
-                serial_->send(buf);
+                transmit_frame(frame);
             }
             else
             {
@@ -257,16 +193,7 @@ private:
      */
     void send_stop_command()
     {
-        auto &tx = send_data_.tx;
-        tx[0] = duojin01::FRAME_HEADER;
-        tx[1] = 0; tx[2] = 0;
-        tx[3] = 0; tx[4] = 0;
-        tx[5] = 0; tx[6] = 0;
-        tx[7] = 0; tx[8] = 0;
-        tx[9] = xor_checksum(tx.data(), 9);
-        tx[10] = duojin01::FRAME_TAIL;
-        std::vector<uint8_t> buf(tx.begin(), tx.end());
-        serial_->send(buf);
+        transmit_frame(duojin01::build_command_frame(0.0, 0.0, 0.0));
     }
 
     /**
@@ -289,13 +216,10 @@ private:
             "Serial error: %s — closing port and scheduling reconnect.",
             reason.c_str());
 
-        if (serial_)
+        if (serial_ && serial_->is_open())
         {
-            if (serial_->is_open())
-            {
-                try { send_stop_command(); } catch (...) {}
-                try { serial_->close(); } catch (...) {}
-            }
+            try { send_stop_command(); } catch (...) {}
+            try { serial_->close(); } catch (...) {}
         }
 
         rx_count_ = 0;
@@ -427,7 +351,6 @@ private:
             return false;
         }
         frame_ready_.store(false, std::memory_order_release);
-        last_frame_time_ = this->now();
         return true;
     }
 
@@ -518,7 +441,7 @@ private:
             return;
         }
 
-        const uint8_t check = xor_checksum(rx_buf_.data(), 22);
+        const uint8_t check = duojin01::xor_checksum(rx_buf_.data(), 22);
         if (check != rx_buf_[22])
         {
             return;
@@ -536,17 +459,17 @@ private:
      */
     void decode_frame_and_update_state(const std::array<uint8_t, duojin01::RECEIVE_DATA_SIZE> &rx)
     {
-        const float vx = decode_vel_mps_be(rx[2], rx[3]);
-        const float vy = decode_vel_mps_be(rx[4], rx[5]);
-        const float wz = decode_vel_mps_be(rx[6], rx[7]);
+        const float vx = duojin01::decode_vel_mps_be(rx[2], rx[3]);
+        const float vy = duojin01::decode_vel_mps_be(rx[4], rx[5]);
+        const float wz = duojin01::decode_vel_mps_be(rx[6], rx[7]);
 
         duojin01::IMUData imu_raw;
-        imu_raw.accele_x_data = decode_i16_be(rx[8], rx[9]);
-        imu_raw.accele_y_data = decode_i16_be(rx[10], rx[11]);
-        imu_raw.accele_z_data = decode_i16_be(rx[12], rx[13]);
-        imu_raw.gyros_x_data = decode_i16_be(rx[14], rx[15]);
-        imu_raw.gyros_y_data = decode_i16_be(rx[16], rx[17]);
-        imu_raw.gyros_z_data = decode_i16_be(rx[18], rx[19]);
+        imu_raw.accele_x_data = duojin01::decode_i16_be(rx[8], rx[9]);
+        imu_raw.accele_y_data = duojin01::decode_i16_be(rx[10], rx[11]);
+        imu_raw.accele_z_data = duojin01::decode_i16_be(rx[12], rx[13]);
+        imu_raw.gyros_x_data = duojin01::decode_i16_be(rx[14], rx[15]);
+        imu_raw.gyros_y_data = duojin01::decode_i16_be(rx[16], rx[17]);
+        imu_raw.gyros_z_data = duojin01::decode_i16_be(rx[18], rx[19]);
 
         const int16_t v_mv = static_cast<int16_t>(
             (static_cast<uint16_t>(rx[20]) << 8) | static_cast<uint16_t>(rx[21]));
@@ -555,16 +478,9 @@ private:
         {
             std::lock_guard<std::mutex> lk(state_mtx_);
 
-            receive_data_.flag_stop = rx[1];
-            receive_data_.frame_header = rx[0];
-            receive_data_.frame_tail = rx[23];
-            receive_data_.rx = rx;
-
             robot_vel_.x = vx;
             robot_vel_.y = vy;
             robot_vel_.z = wz;
-
-            imu_data_ = imu_raw;
 
             imu_msg_.linear_acceleration.x = static_cast<double>(imu_raw.accele_x_data) / duojin01::ACCEl_RATIO;
             imu_msg_.linear_acceleration.y = static_cast<double>(imu_raw.accele_y_data) / duojin01::ACCEl_RATIO;
@@ -576,31 +492,6 @@ private:
 
             power_voltage_ = v;
         }
-    }
-
-    /**
-     * @brief 解码一个有符号16-bit整数（从大端）；对应原本的IMU_Trans
-     *
-     * @author litianshun (litianshun.cn@gmail.com)
-     * @date 2026-01-25
-     */
-    static inline int16_t decode_i16_be(uint8_t high, uint8_t low) noexcept
-    {
-        const uint16_t u = (static_cast<uint16_t>(high) << 8) |
-                           static_cast<uint16_t>(low);
-        return static_cast<int16_t>(u);
-    }
-
-    /**
-     * @brief 把大端 mm/s 的速度解码成 m/s；对应原本的Odom_Trans，简化了无意义的乘法和取余运算
-     *
-     * @author litianshun (litianshun.cn@gmail.com)
-     * @date 2026-01-25
-     */
-    static inline float decode_vel_mps_be(uint8_t high, uint8_t low) noexcept
-    {
-        constexpr float k_inv_1000 = 0.001f;
-        return static_cast<float>(decode_i16_be(high, low)) * k_inv_1000;
     }
 
     /**
@@ -701,7 +592,12 @@ private:
 
         try
         {
-            serial_ = std::make_unique<drivers::serial_driver::SerialPort>(io_ctx_, usart_port_name_, serial_cfg_);
+            const drivers::serial_driver::SerialPortConfig serial_cfg(
+                static_cast<uint32_t>(serial_baud_rate_),
+                drivers::serial_driver::FlowControl::NONE,
+                drivers::serial_driver::Parity::NONE,
+                drivers::serial_driver::StopBits::ONE);
+            serial_ = std::make_unique<drivers::serial_driver::SerialPort>(io_ctx_, usart_port_name_, serial_cfg);
             serial_->open();
         }
         catch (const std::exception &e)
@@ -730,7 +626,6 @@ private:
             }
 
             start_serial_receive();
-            last_frame_time_ = this->now();
             last_serial_rx_steady_ns_.store(steady_now_ns(), std::memory_order_release);
             rx_count_ = 0;
             serial_reconnecting_ = false;
@@ -782,23 +677,15 @@ private:
 
     // -------- timing --------
     rclcpp::Time last_time_;
-    rclcpp::Time last_frame_time_; 
 
     // -------- serial --------
     drivers::common::IoContext io_ctx_;
-    drivers::serial_driver::SerialPortConfig serial_cfg_{
-        static_cast<uint32_t>(serial_baud_rate_),
-        drivers::serial_driver::FlowControl::NONE,
-        drivers::serial_driver::Parity::NONE,
-        drivers::serial_driver::StopBits::ONE};
     std::unique_ptr<drivers::serial_driver::SerialPort> serial_;
+    std::vector<uint8_t> tx_buffer_{duojin01::SEND_DATA_SIZE};
 
     // Driver runtime state
     duojin01::VelPosData robot_pos_;
     duojin01::VelPosData robot_vel_;
-    duojin01::ReceiveFrame receive_data_;
-    duojin01::SendFrame send_data_;
-    duojin01::IMUData imu_data_;
 
     float power_voltage_{0.0f};
 

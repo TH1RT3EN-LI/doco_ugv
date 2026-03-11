@@ -4,10 +4,9 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetEnvironmentVariable
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import EnvironmentVariable, LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import EnvironmentVariable, LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
-
 
 def generate_launch_description():
     bringup_share = get_package_share_directory("ugv_bringup")
@@ -26,8 +25,6 @@ def generate_launch_description():
     ugv_map_frame = LaunchConfiguration("ugv_map_frame")
     global_to_ugv_map = LaunchConfiguration("global_to_ugv_map")
     publish_global_map_tf = LaunchConfiguration("publish_global_map_tf")
-    enable_dynamic_global_alignment = LaunchConfiguration("enable_dynamic_global_alignment")
-    default_rviz_config = PathJoinSubstitution([bringup_share, "config", "rviz", "mapping.rviz"])
 
     sim_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(bringup_share, "launch", "sim.launch.py")),
@@ -41,7 +38,6 @@ def generate_launch_description():
             "ugv_map_frame": ugv_map_frame,
             "global_to_ugv_map": global_to_ugv_map,
             "publish_global_map_tf": publish_global_map_tf,
-            "enable_dynamic_global_alignment": enable_dynamic_global_alignment,
             "use_teleop": "true",
             "use_foxglove": use_foxglove,
             "use_rviz": use_rviz,
@@ -85,7 +81,7 @@ def generate_launch_description():
                 "rviz_software_gl",
                 default_value=EnvironmentVariable("UGV_RVIZ_SOFTWARE_GL", default_value="true"),
             ),
-            DeclareLaunchArgument("rviz_config", default_value=default_rviz_config),
+            DeclareLaunchArgument("rviz_config", default_value=os.path.join(bringup_share, "config", "rviz", "mapping.rviz")),
             DeclareLaunchArgument("global_frame", default_value="global"),
             DeclareLaunchArgument("ugv_map_frame", default_value="ugv_map"),
             DeclareLaunchArgument(
@@ -94,7 +90,6 @@ def generate_launch_description():
                 description="Static transform x,y,z,roll,pitch,yaw from global_frame to ugv_map_frame",
             ),
             DeclareLaunchArgument("publish_global_map_tf", default_value="true"),
-            DeclareLaunchArgument("enable_dynamic_global_alignment", default_value="false"),
             sim_launch,
             slam_launch,
             scan_rewriter,

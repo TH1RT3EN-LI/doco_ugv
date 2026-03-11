@@ -14,7 +14,7 @@ twist_mux:
 
       teleop_normal:
         topic: /ugv/cmd_vel_normal
-        timeout: 0.01
+        timeout: 0.15
         priority: 60
 
       teleop_keyboard:
@@ -24,7 +24,7 @@ twist_mux:
 
       teleop_slow:
         topic: /ugv/cmd_vel_slow
-        timeout: 0.01
+        timeout: 0.15
         priority: 50
 
     locks:

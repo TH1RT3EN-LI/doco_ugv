@@ -7,34 +7,7 @@ from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import EnvironmentVariable, LaunchConfiguration, PathJoinSubstitution
 
-
-def _resolve_default_map_yaml(bringup_share: str) -> str:
-    maps_dir = os.path.join(bringup_share, "maps")
-    numeric_maps = []
-    newest_map = None
-    newest_mtime = -1.0
-
-    if os.path.isdir(maps_dir):
-        for filename in os.listdir(maps_dir):
-            if not filename.endswith(".yaml"):
-                continue
-            path = os.path.join(maps_dir, filename)
-            if not os.path.isfile(path):
-                continue
-            stem = os.path.splitext(filename)[0]
-            if stem.isdigit():
-                numeric_maps.append((int(stem), path))
-            mtime = os.path.getmtime(path)
-            if mtime > newest_mtime:
-                newest_mtime = mtime
-                newest_map = path
-
-    if numeric_maps:
-        numeric_maps.sort(key=lambda item: item[0])
-        return numeric_maps[-1][1]
-    if newest_map is not None:
-        return newest_map
-    return os.path.join(maps_dir, "default.yaml")
+from ugv_bringup.launch_helpers import resolve_default_map_yaml
 
 
 def generate_launch_description():
@@ -43,7 +16,7 @@ def generate_launch_description():
 
     bringup_share = get_package_share_directory("ugv_bringup")
     orbbec_camera_share = get_package_share_directory("orbbec_camera")
-    default_map_yaml = _resolve_default_map_yaml(bringup_share)
+    default_map_yaml = resolve_default_map_yaml(bringup_share)
 
     use_sim_time = LaunchConfiguration("use_sim_time")
     use_rviz = LaunchConfiguration("use_rviz")
@@ -59,16 +32,15 @@ def generate_launch_description():
     imu0 = LaunchConfiguration("imu0")
     map_yaml = LaunchConfiguration("map")
     params_file = LaunchConfiguration("params_file")
+    rviz_config = LaunchConfiguration("rviz_config")
     global_frame = LaunchConfiguration("global_frame")
     ugv_map_frame = LaunchConfiguration("ugv_map_frame")
     global_to_ugv_map = LaunchConfiguration("global_to_ugv_map")
     publish_global_map_tf = LaunchConfiguration("publish_global_map_tf")
-    enable_dynamic_global_alignment = LaunchConfiguration("enable_dynamic_global_alignment")
+    auto_initial_pose = LaunchConfiguration("auto_initial_pose")
 
     base_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(bringup_share, "launch", "base.launch.py")
-        ),
+        PythonLaunchDescriptionSource(os.path.join(bringup_share, "launch", "base.launch.py")),
         launch_arguments={
             "use_foxglove": use_foxglove,
             "use_lidar": "true",
@@ -78,14 +50,11 @@ def generate_launch_description():
             "ugv_map_frame": ugv_map_frame,
             "global_to_ugv_map": global_to_ugv_map,
             "publish_global_map_tf": publish_global_map_tf,
-            "enable_dynamic_global_alignment": enable_dynamic_global_alignment,
         }.items(),
     )
 
     nav_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(bringup_share, "launch", "nav2.launch.py")
-        ),
+        PythonLaunchDescriptionSource(os.path.join(bringup_share, "launch", "nav2.launch.py")),
         launch_arguments={
             "use_rviz": use_rviz,
             "autostart": autostart,
@@ -93,13 +62,13 @@ def generate_launch_description():
             "map_frame": ugv_map_frame,
             "params_file": params_file,
             "log_level": log_level,
+            "auto_initial_pose": auto_initial_pose,
+            "rviz_config": rviz_config,
         }.items(),
     )
 
     depth_camera_launch = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            PathJoinSubstitution([orbbec_camera_share, "launch", depth_camera_launch_file])
-        ),
+        PythonLaunchDescriptionSource(PathJoinSubstitution([orbbec_camera_share, "launch", depth_camera_launch_file])),
         launch_arguments={
             "camera_name": depth_camera_name,
             "serial_number": depth_camera_serial_number,
@@ -122,6 +91,7 @@ def generate_launch_description():
             DeclareLaunchArgument("use_rviz", default_value="true"),
             DeclareLaunchArgument("autostart", default_value="true"),
             DeclareLaunchArgument("use_foxglove", default_value="true"),
+            DeclareLaunchArgument("auto_initial_pose", default_value="false"),
             DeclareLaunchArgument(
                 "use_depth_camera",
                 default_value=EnvironmentVariable("UGV_USE_DEPTH_CAMERA", default_value="false"),
@@ -144,15 +114,9 @@ def generate_launch_description():
                 description="Static transform x,y,z,roll,pitch,yaw from global_frame to ugv_map_frame",
             ),
             DeclareLaunchArgument("publish_global_map_tf", default_value="true"),
-            DeclareLaunchArgument("enable_dynamic_global_alignment", default_value="false"),
-            DeclareLaunchArgument(
-                "map",
-                default_value=default_map_yaml,
-            ),
-            DeclareLaunchArgument(
-                "params_file",
-                default_value=os.path.join(bringup_share, "config", "nav2.yaml"),
-            ),
+            DeclareLaunchArgument("map", default_value=default_map_yaml),
+            DeclareLaunchArgument("params_file", default_value=os.path.join(bringup_share, "config", "nav2.yaml")),
+            DeclareLaunchArgument("rviz_config", default_value=os.path.join(bringup_share, "config", "rviz", "navigation.rviz")),
             base_launch,
             depth_camera_launch,
             nav_launch,
