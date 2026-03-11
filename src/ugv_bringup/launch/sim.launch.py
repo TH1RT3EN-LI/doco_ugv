@@ -1,6 +1,8 @@
 import os
 import subprocess
+import sys
 import tempfile
+from functools import partial
 
 from ament_index_python.packages import get_package_prefix, get_package_share_directory
 from launch import LaunchDescription
@@ -21,6 +23,13 @@ from launch.substitutions import Command, EnvironmentVariable, LaunchConfigurati
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 
+SIM_WORLDS_SHARE = get_package_share_directory("sim_worlds")
+SIM_WORLDS_LAUNCH_DIR = os.path.join(SIM_WORLDS_SHARE, "launch")
+if SIM_WORLDS_LAUNCH_DIR not in sys.path:
+    sys.path.insert(0, SIM_WORLDS_LAUNCH_DIR)
+
+from world_registry import resolve_world_launch_configurations
+
 
 def generate_launch_description():
     robot_prefix = "ugv_"
@@ -37,7 +46,6 @@ def generate_launch_description():
     workspace_root = os.path.dirname(os.path.dirname(pkg_prefix))
     bringup_src = os.path.join(workspace_root, "src", "ugv_bringup")
     description_src = os.path.join(workspace_root, "src", "ugv_description")
-    sim_worlds_src = os.path.join(workspace_root, "src", "sim_worlds", "worlds")
 
     ekf_config_path = os.path.join(bringup_src, "config", "ekf.yaml")
     bridge_cfg = os.path.join(bringup_src, "config", "ros_gz_bridge.yaml")
@@ -82,12 +90,19 @@ def generate_launch_description():
         value_type=str,
     )
 
+    resolve_world_action = OpaqueFunction(
+        function=partial(
+            resolve_world_launch_configurations,
+            package_share=SIM_WORLDS_SHARE,
+        )
+    )
+
     def prepare_gz_world(context):
-        world_value = world.perform(context)
+        resolved_world_id = LaunchConfiguration("resolved_world_id").perform(context)
+        world_path = LaunchConfiguration("resolved_world_sdf_path").perform(context)
         use_sim_camera_value = use_sim_camera.perform(context)
         robot_prefix_value = robot_prefix_cfg.perform(context)
-        world_file_name = f"{world_value}.sdf"
-        world_path = os.path.join(sim_worlds_src, world_file_name)
+        world_file_name = f"{resolved_world_id}.sdf"
         env = os.environ.copy()
         env["UGV_SIM_CAMERA_ENABLED"] = use_sim_camera_value
         robot_urdf = subprocess.check_output(
@@ -116,7 +131,8 @@ def generate_launch_description():
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(os.path.join(bringup_share, "launch", "gz_sim.launch.py")),
                 launch_arguments={
-                    "world": gz_world_path,
+                    "world": world,
+                    "world_sdf_path": gz_world_path,
                     "headless": headless,
                     "render_engine": render_engine,
                     "gz_partition": gz_partition,
@@ -368,7 +384,7 @@ def generate_launch_description():
             DeclareLaunchArgument(
                 "world",
                 default_value=EnvironmentVariable("UGV_WORLD", default_value="test"),
-                description="World basename under sim_worlds/worlds without .sdf suffix",
+                description="Registered sim_worlds world id",
             ),
             DeclareLaunchArgument("robot_prefix", default_value=robot_prefix),
             DeclareLaunchArgument("headless", default_value="false"),
@@ -436,6 +452,7 @@ def generate_launch_description():
             DeclareLaunchArgument("keyboard_backend", default_value="tty"),
             DeclareLaunchArgument("use_foxglove", default_value="false"),
             DeclareLaunchArgument("base_driver_start_delay", default_value="6.0"),
+            resolve_world_action,
             prepare_gz_world_action,
             gz_sim_launch,
             sim_clock_launch,
