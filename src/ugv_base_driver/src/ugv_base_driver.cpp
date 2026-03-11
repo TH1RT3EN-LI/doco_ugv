@@ -45,9 +45,9 @@ public:
         usart_port_name_ = this->declare_parameter<std::string>("usart_port_name", "/dev/ugv_controller");
         serial_baud_rate_ = this->declare_parameter<int>("serial_baud_rate", 115200);
 
-        odom_frame_id_ = this->declare_parameter<std::string>("odom_frame_id", "odom");
-        robot_frame_id_ = this->declare_parameter<std::string>("robot_frame_id", "base_footprint");
-        imu_frame_id_ = this->declare_parameter<std::string>("imu_frame_id", "imu_link");
+        odom_frame_id_ = this->declare_parameter<std::string>("odom_frame_id", "ugv_odom");
+        robot_frame_id_ = this->declare_parameter<std::string>("robot_frame_id", "ugv_base_footprint");
+        imu_frame_id_ = this->declare_parameter<std::string>("imu_frame_id", "ugv_imu_link");
 
         // 用于缩放里程计的尺度
         odom_x_scale_ = this->declare_parameter<double>("odom_x_scale", 1.0);

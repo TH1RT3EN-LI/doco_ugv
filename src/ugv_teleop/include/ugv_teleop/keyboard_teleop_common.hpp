@@ -27,7 +27,7 @@ struct CommonTeleopParams
   double decel_limit_linear{3.0};
   double accel_limit_angular{6.0};
   double decel_limit_angular{8.0};
-  double idle_timeout_sec{0.25};
+  double idle_timeout_sec{0.0};
 };
 
 class TwistPublisherAdapter

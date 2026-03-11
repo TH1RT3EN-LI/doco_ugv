@@ -99,7 +99,7 @@ CommonTeleopParams declare_common_parameters(rclcpp::Node & node)
   params.decel_limit_angular = node.declare_parameter<double>(
     "decel_limit_angular", 8.0, read_only_descriptor);
   params.idle_timeout_sec = node.declare_parameter<double>(
-    "idle_timeout_sec", 0.25, read_only_descriptor);
+    "idle_timeout_sec", 0.0, read_only_descriptor);
 
   if (!params.stamped && !params.frame_id.empty()) {
     throw std::runtime_error("'frame_id' can only be set when 'stamped' is true");

@@ -482,7 +482,7 @@ def generate_launch_description():
             DeclareLaunchArgument("controller_device_path", default_value="/tmp/ugv_controller"),
             DeclareLaunchArgument("use_teleop", default_value="true"),
             DeclareLaunchArgument("keyboard_enabled", default_value="false"),
-            DeclareLaunchArgument("keyboard_backend", default_value="tty"),
+            DeclareLaunchArgument("keyboard_backend", default_value="gui"),
             DeclareLaunchArgument("use_foxglove", default_value="false"),
             DeclareLaunchArgument("effective_clock_mode", default_value=""),
             DeclareLaunchArgument("generated_artifact_dir", default_value=""),

@@ -79,7 +79,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /robot_description
+        Value: /ugv/robot_description
       Enabled: true
       Links:
         All Links Enabled: true
@@ -87,90 +87,90 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_footprint:
+        ugv_base_footprint:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        computer:
+        ugv_base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        depth_cam:
+        ugv_computer:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        imu_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        laser:
+        ugv_depth_cam:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lower_left_pillar:
+        ugv_imu_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        ugv_laser:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lower_left_wheel:
+        ugv_lower_left_pillar:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lower_left_wheel_shaft:
+        ugv_lower_left_wheel:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lower_right_pillar:
+        ugv_lower_left_wheel_shaft:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lower_right_wheel:
+        ugv_lower_right_pillar:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        lower_right_wheel_shaft:
+        ugv_lower_right_wheel:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        upper_left_pillar:
+        ugv_lower_right_wheel_shaft:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        upper_left_wheel:
+        ugv_upper_left_pillar:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        upper_left_wheel_shaft:
+        ugv_upper_left_wheel:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        upper_right_pillar:
+        ugv_upper_left_wheel_shaft:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        upper_right_wheel:
+        ugv_upper_right_pillar:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        upper_right_wheel_shaft:
+        ugv_upper_right_wheel:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        ugv_upper_right_wheel_shaft:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -243,45 +243,45 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        base_footprint:
+        ugv_base_footprint:
           Value: true
-        base_link:
+        ugv_base_link:
           Value: false
-        computer:
+        ugv_computer:
           Value: false
-        depth_cam:
+        ugv_depth_cam:
           Value: true
-        imu_link:
+        ugv_imu_link:
           Value: true
-        laser:
+        ugv_laser:
           Value: false
-        lower_left_pillar:
+        ugv_lower_left_pillar:
           Value: false
-        lower_left_wheel:
+        ugv_lower_left_wheel:
           Value: false
-        lower_left_wheel_shaft:
+        ugv_lower_left_wheel_shaft:
           Value: false
-        lower_right_pillar:
+        ugv_lower_right_pillar:
           Value: false
-        lower_right_wheel:
+        ugv_lower_right_wheel:
           Value: false
-        lower_right_wheel_shaft:
+        ugv_lower_right_wheel_shaft:
           Value: false
         ugv_map:
           Value: true
         ugv_odom:
           Value: true
-        upper_left_pillar:
+        ugv_upper_left_pillar:
           Value: false
-        upper_left_wheel:
+        ugv_upper_left_wheel:
           Value: false
-        upper_left_wheel_shaft:
+        ugv_upper_left_wheel_shaft:
           Value: false
-        upper_right_pillar:
+        ugv_upper_right_pillar:
           Value: false
-        upper_right_wheel:
+        ugv_upper_right_wheel:
           Value: false
-        upper_right_wheel_shaft:
+        ugv_upper_right_wheel_shaft:
           Value: false
       Marker Scale: 1
       Name: TF
@@ -291,35 +291,35 @@ Visualization Manager:
       Tree:
         ugv_map:
           ugv_odom:
-            base_footprint:
-              base_link:
-                computer:
+            ugv_base_footprint:
+              ugv_base_link:
+                ugv_computer:
                   {}
-                depth_cam:
+                ugv_depth_cam:
                   {}
-                imu_link:
+                ugv_imu_link:
                   {}
-                laser:
+                ugv_laser:
                   {}
-                lower_left_pillar:
+                ugv_lower_left_pillar:
                   {}
-                lower_left_wheel_shaft:
-                  lower_left_wheel:
+                ugv_lower_left_wheel_shaft:
+                  ugv_lower_left_wheel:
                     {}
-                lower_right_pillar:
+                ugv_lower_right_pillar:
                   {}
-                lower_right_wheel_shaft:
-                  lower_right_wheel:
+                ugv_lower_right_wheel_shaft:
+                  ugv_lower_right_wheel:
                     {}
-                upper_left_pillar:
+                ugv_upper_left_pillar:
                   {}
-                upper_left_wheel_shaft:
-                  upper_left_wheel:
+                ugv_upper_left_wheel_shaft:
+                  ugv_upper_left_wheel:
                     {}
-                upper_right_pillar:
+                ugv_upper_right_pillar:
                   {}
-                upper_right_wheel_shaft:
-                  upper_right_wheel:
+                ugv_upper_right_wheel_shaft:
+                  ugv_upper_right_wheel:
                     {}
       Update Interval: 0
       Value: true

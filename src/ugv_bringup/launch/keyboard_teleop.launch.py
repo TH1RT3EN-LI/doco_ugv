@@ -62,7 +62,7 @@ def generate_launch_description():
                 "use_sim_time",
                 default_value=EnvironmentVariable("USE_SIM_TIME", default_value="false"),
             ),
-            DeclareLaunchArgument("keyboard_backend", default_value="tty"),
+            DeclareLaunchArgument("keyboard_backend", default_value="gui"),
             gui_node,
             tty_node,
             evdev_legacy_node,

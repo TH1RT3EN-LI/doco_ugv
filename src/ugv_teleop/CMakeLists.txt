@@ -100,6 +100,13 @@ if(BUILD_TESTING)
   if(TARGET test_joy_launcher_logic)
     target_link_libraries(test_joy_launcher_logic ugv_teleop_core)
   endif()
+
+  ament_add_gtest(test_keyboard_teleop_core
+    test/test_keyboard_teleop_core.cpp
+  )
+  if(TARGET test_keyboard_teleop_core)
+    target_link_libraries(test_keyboard_teleop_core ugv_teleop_core)
+  endif()
 endif()
 
 ament_package()

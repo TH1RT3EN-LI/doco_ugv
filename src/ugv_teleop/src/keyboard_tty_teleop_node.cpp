@@ -36,7 +36,7 @@ public:
     rcl_interfaces::msg::ParameterDescriptor read_only_descriptor;
     read_only_descriptor.read_only = true;
     repeat_timeout_sec_ = this->declare_parameter<double>(
-      "repeat_timeout_sec", 0.35, read_only_descriptor);
+      "repeat_timeout_sec", 0.75, read_only_descriptor);
     read_poll_timeout_ = this->declare_parameter<double>(
       "read_poll_timeout", 0.02, read_only_descriptor);
     tty_device_path_ = this->declare_parameter<std::string>(
@@ -197,7 +197,7 @@ private:
   std::shared_ptr<TwistPublisherAdapter> publisher_;
   rclcpp::TimerBase::SharedPtr publish_timer_;
 
-  double repeat_timeout_sec_{0.35};
+  double repeat_timeout_sec_{0.75};
   double read_poll_timeout_{0.02};
   std::string tty_device_path_;
 
