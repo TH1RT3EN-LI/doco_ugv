@@ -4,6 +4,10 @@ import os
 from glob import glob
 package_name = 'ugv_bringup'
 
+
+def _without(paths, *suffixes):
+    return [path for path in paths if not any(path.endswith(suffix) for suffix in suffixes)]
+
 def _sanitize_argv(argv):
     drop_exact = {
         "--uninstall",
@@ -51,10 +55,10 @@ setup(
             glob('launch/*.py')),
 
         (os.path.join('share', package_name, 'config'),
-            glob('config/*.yaml')),
+            _without(glob('config/*.yaml'), 'ros_gz_bridge.yaml')),
         
         (os.path.join('share', package_name, 'config', 'rviz'),
-            glob('config/rviz/*.rviz')),
+            _without(glob('config/rviz/*.rviz'), 'sim.rviz')),
         
         (os.path.join('share', package_name, 'config', 'foxglove'),
             glob('config/foxglove/*.yaml') + glob('config/foxglove/*.json')),
@@ -69,6 +73,8 @@ setup(
     description='启动车辆的有关软硬件',
     license='GPL-3.0-only',
     entry_points={
-        'console_scripts': [],
+        'console_scripts': [
+            'initial_pose_publisher = ugv_bringup.initial_pose_publisher:main',
+        ],
     },
 )

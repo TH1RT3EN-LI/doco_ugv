@@ -32,6 +32,8 @@ def generate_launch_description():
     imu0 = LaunchConfiguration("imu0")
     map_yaml = LaunchConfiguration("map")
     params_file = LaunchConfiguration("params_file")
+    config_preset = LaunchConfiguration("config_preset")
+    config_overlay = LaunchConfiguration("config_overlay")
     rviz_config = LaunchConfiguration("rviz_config")
     global_frame = LaunchConfiguration("global_frame")
     ugv_map_frame = LaunchConfiguration("ugv_map_frame")
@@ -61,6 +63,8 @@ def generate_launch_description():
             "map": map_yaml,
             "map_frame": ugv_map_frame,
             "params_file": params_file,
+            "config_preset": config_preset,
+            "config_overlay": config_overlay,
             "log_level": log_level,
             "auto_initial_pose": auto_initial_pose,
             "rviz_config": rviz_config,
@@ -115,7 +119,9 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument("publish_global_map_tf", default_value="true"),
             DeclareLaunchArgument("map", default_value=default_map_yaml),
-            DeclareLaunchArgument("params_file", default_value=os.path.join(bringup_share, "config", "nav2.yaml")),
+            DeclareLaunchArgument("params_file", default_value=""),
+            DeclareLaunchArgument("config_preset", default_value="hw"),
+            DeclareLaunchArgument("config_overlay", default_value=""),
             DeclareLaunchArgument("rviz_config", default_value=os.path.join(bringup_share, "config", "rviz", "navigation.rviz")),
             base_launch,
             depth_camera_launch,

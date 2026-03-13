@@ -1,4 +1,16 @@
+import copy
 import os
+import shutil
+import tempfile
+
+import yaml
+
+
+NAV2_PRESET_OVERLAYS = {
+    "none": None,
+    "hw": "nav2.hw.overlay.yaml",
+    "sim": "nav2.sim.overlay.yaml",
+}
 
 
 def runtime_maps_dir() -> str:
@@ -54,6 +66,101 @@ def parse_six_dof(raw_value: str, arg_name: str):
     return tokens
 
 
+def _load_yaml_mapping(path: str):
+    with open(path, "r", encoding="utf-8") as input_stream:
+        data = yaml.safe_load(input_stream)
+    if data is None:
+        return {}
+    if not isinstance(data, dict):
+        raise RuntimeError(f"Expected YAML mapping at {path}, got {type(data).__name__}")
+    return data
+
+
+def _deep_merge_mappings(base, overlay):
+    if not isinstance(base, dict) or not isinstance(overlay, dict):
+        return copy.deepcopy(overlay)
+
+    merged = copy.deepcopy(base)
+    for key, value in overlay.items():
+        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
+            merged[key] = _deep_merge_mappings(merged[key], value)
+        else:
+            merged[key] = copy.deepcopy(value)
+    return merged
+
+
+def _nav2_preset_overlay_path(config_dir: str, preset: str | None):
+    resolved_preset = (preset or "hw").strip().lower()
+    if resolved_preset not in NAV2_PRESET_OVERLAYS:
+        raise RuntimeError(
+            f"Unknown nav2 config_preset '{preset}'. Expected one of: {', '.join(sorted(NAV2_PRESET_OVERLAYS))}"
+        )
+    overlay_name = NAV2_PRESET_OVERLAYS[resolved_preset]
+    if overlay_name is None:
+        return None
+    return os.path.join(config_dir, overlay_name)
+
+
+def resolve_nav2_config_stack(
+    *,
+    config_dir: str,
+    config_preset: str,
+    params_file: str | None = None,
+    config_overlay: str | None = None,
+):
+    base_path = params_file.strip() if params_file else ""
+    if not base_path:
+        base_path = os.path.join(config_dir, "nav2.common.yaml")
+    if not os.path.isfile(base_path):
+        raise RuntimeError(f"Nav2 params base file not found: {base_path}")
+
+    overlay_paths = [base_path]
+    preset_overlay = _nav2_preset_overlay_path(config_dir, config_preset)
+    if preset_overlay:
+        if not os.path.isfile(preset_overlay):
+            raise RuntimeError(f"Nav2 preset overlay not found: {preset_overlay}")
+        overlay_paths.append(preset_overlay)
+
+    config_overlay_path = config_overlay.strip() if config_overlay else ""
+    if config_overlay_path:
+        if not os.path.isfile(config_overlay_path):
+            raise RuntimeError(f"Nav2 config_overlay not found: {config_overlay_path}")
+        overlay_paths.append(config_overlay_path)
+
+    return overlay_paths
+
+
+def create_merged_nav2_params(
+    *,
+    config_dir: str,
+    config_preset: str,
+    params_file: str | None = None,
+    config_overlay: str | None = None,
+):
+    config_stack = resolve_nav2_config_stack(
+        config_dir=config_dir,
+        config_preset=config_preset,
+        params_file=params_file,
+        config_overlay=config_overlay,
+    )
+
+    merged = {}
+    for path in config_stack:
+        merged = _deep_merge_mappings(merged, _load_yaml_mapping(path))
+
+    temp_dir = tempfile.mkdtemp(prefix="ugv_nav2_")
+    merged_path = os.path.join(temp_dir, "nav2.params.yaml")
+    with open(merged_path, "w", encoding="utf-8") as output_stream:
+        yaml.safe_dump(merged, output_stream, sort_keys=False)
+
+    return temp_dir, merged_path
+
+
+def cleanup_temp_dir(path: str | None):
+    if path and os.path.isdir(path):
+        shutil.rmtree(path, ignore_errors=True)
+
+
 def create_global_to_ugv_map_tf_action(
     *,
     global_frame,
@@ -103,4 +210,3 @@ def create_controller_device_ready_gate(*, controller_device_path, actions, labe
         return result
 
     return OpaqueFunction(function=_gate)
-

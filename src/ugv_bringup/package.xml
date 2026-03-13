@@ -10,18 +10,18 @@
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
   <exec_depend>xacro</exec_depend>
 
   <exec_depend>ugv_description</exec_depend>
   <exec_depend>ugv_base_driver</exec_depend>
   <exec_depend>ugv_slam_tools</exec_depend>
-  <exec_depend>ugv_sim_tools</exec_depend>
-  <exec_depend>ugv_controller_emulator</exec_depend>
   <exec_depend>ugv_teleop</exec_depend>
   <exec_depend>orbbec_camera</exec_depend>
   <exec_depend>orbbec_description</exec_depend>
   <exec_depend>lslidar_driver</exec_depend>
-  <exec_depend>sim_worlds</exec_depend>
 
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>joint_state_publisher</exec_depend>
@@ -41,13 +41,11 @@
   <exec_depend>diagnostic_updater</exec_depend>
   <exec_depend>diagnostic_msgs</exec_depend>
 
-  <exec_depend>ros_gz_sim</exec_depend>
-  <exec_depend>ros_gz_bridge</exec_depend>
-
   <exec_depend>rviz2</exec_depend>
   <exec_depend>foxglove_bridge</exec_depend>
 
   <test_depend>python3-pytest</test_depend>
+  <test_depend>python3-yaml</test_depend>
 
   <export>
     <build_type>ament_python</build_type>
