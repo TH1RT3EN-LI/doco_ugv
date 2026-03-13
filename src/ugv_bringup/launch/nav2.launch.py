@@ -31,10 +31,15 @@ def generate_launch_description():
 
     nav2_launch = GroupAction(
         actions=[
+            SetRemap(src="cmd_vel", dst="/ugv/cmd_vel_nav"),
             SetRemap(src="/cmd_vel", dst="/ugv/cmd_vel_nav"),
+            SetRemap(src="initialpose", dst="/ugv/initialpose"),
             SetRemap(src="/initialpose", dst="/ugv/initialpose"),
+            SetRemap(src="goal_pose", dst="/ugv/goal_pose"),
             SetRemap(src="/goal_pose", dst="/ugv/goal_pose"),
+            SetRemap(src="clicked_point", dst="/ugv/clicked_point"),
             SetRemap(src="/clicked_point", dst="/ugv/clicked_point"),
+            SetRemap(src="move_base_simple/goal", dst="/ugv/goal_pose"),
             SetRemap(src="/move_base_simple/goal", dst="/ugv/goal_pose"),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(os.path.join(nav2_share, "launch", "bringup_launch.py")),
@@ -71,6 +76,8 @@ def generate_launch_description():
             {"frame_id": map_frame},
             {"x": 0.0, "y": 0.0, "yaw": 0.0},
             {"delay_sec": 2.0, "publish_count": 10, "publish_period_sec": 0.2},
+            # AMCL may not expose its subscription immediately during composed startup.
+            {"require_subscriber": False},
         ],
         condition=IfCondition(auto_initial_pose),
     )
