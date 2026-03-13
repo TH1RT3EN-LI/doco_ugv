@@ -27,6 +27,11 @@
         <newparam sid="tag_sampler">
           <sampler2D>
             <source>tag_surface</source>
+            <wrap_s>CLAMP</wrap_s>
+            <wrap_t>CLAMP</wrap_t>
+            <minfilter>NEAREST</minfilter>
+            <magfilter>NEAREST</magfilter>
+            <mipfilter>NONE</mipfilter>
           </sampler2D>
         </newparam>
         <technique sid="common">
