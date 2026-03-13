@@ -35,23 +35,23 @@
           </sampler2D>
         </newparam>
         <technique sid="common">
-          <phong>
+          <lambert>
             <emission>
-              <color>0 0 0 1</color>
+              <texture texture="tag_sampler" texcoord="UVMap"/>
             </emission>
             <ambient>
-              <color>1 1 1 1</color>
+              <color>0 0 0 1</color>
             </ambient>
             <diffuse>
               <texture texture="tag_sampler" texcoord="UVMap"/>
             </diffuse>
-            <specular>
-              <color>0 0 0 1</color>
-            </specular>
-            <shininess>
+            <reflectivity>
+              <float>0.0</float>
+            </reflectivity>
+            <index_of_refraction>
               <float>1.0</float>
-            </shininess>
-          </phong>
+            </index_of_refraction>
+          </lambert>
         </technique>
         <extra>
           <technique profile="GOOGLEEARTH">
