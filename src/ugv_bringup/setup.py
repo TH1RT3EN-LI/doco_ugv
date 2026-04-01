@@ -64,7 +64,7 @@ setup(
             glob('config/foxglove/*.yaml') + glob('config/foxglove/*.json')),
 
         (os.path.join('share', package_name, 'config', 'lattice_primitives'),
-            glob('config/lattice_primitives/*.json')),
+            glob('config/lattice_primitives/*.json') + glob('config/lattice_primitives/*.md')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -75,6 +75,8 @@ setup(
     entry_points={
         'console_scripts': [
             'initial_pose_publisher = ugv_bringup.initial_pose_publisher:main',
+            'ugv_lattice = ugv_bringup.lattice_generator:main',
+            'ugv_omni_lattice_preset = ugv_bringup.omni_lattice_preset:main',
         ],
     },
 )

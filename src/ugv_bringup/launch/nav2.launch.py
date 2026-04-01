@@ -22,7 +22,7 @@ def generate_launch_description():
         bringup_share,
         "config",
         "lattice_primitives",
-        "ugv_omni_2cm_lattice.json",
+        "ugv_omni_2cm_rich_lattice.json",
     )
 
     use_sim_time = LaunchConfiguration("use_sim_time")
