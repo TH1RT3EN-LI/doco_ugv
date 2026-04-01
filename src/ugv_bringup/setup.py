@@ -63,8 +63,8 @@ setup(
         (os.path.join('share', package_name, 'config', 'foxglove'),
             glob('config/foxglove/*.yaml') + glob('config/foxglove/*.json')),
 
-        (os.path.join('share', package_name, 'maps'),
-            glob('maps/*')),
+        (os.path.join('share', package_name, 'config', 'lattice_primitives'),
+            glob('config/lattice_primitives/*.json')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

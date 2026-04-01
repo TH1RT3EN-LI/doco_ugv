@@ -1,31 +1,34 @@
 import os
 
 from ament_index_python.packages import get_package_share_directory
+from nav2_common.launch import RewrittenYaml
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription, OpaqueFunction, RegisterEventHandler, SetLaunchConfiguration
+from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription, OpaqueFunction, SetLaunchConfiguration
 from launch.conditions import IfCondition
-from launch.event_handlers import OnShutdown
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import EnvironmentVariable, LaunchConfiguration
 from launch_ros.actions import Node, SetRemap
 from launch_ros.parameter_descriptions import ParameterValue
 
-from ugv_bringup.launch_helpers import cleanup_temp_dir, create_merged_nav2_params, resolve_default_map_yaml
+from ugv_bringup.launch_helpers import default_nav2_params_path, resolve_default_map_yaml
 
 
 def generate_launch_description():
     bringup_share = get_package_share_directory("ugv_bringup")
     nav2_share = get_package_share_directory("nav2_bringup")
-    config_dir = os.path.join(bringup_share, "config")
+    default_params_file = default_nav2_params_path(bringup_share)
     default_map_yaml = resolve_default_map_yaml(bringup_share)
+    lattice_filepath = os.path.join(
+        bringup_share,
+        "config",
+        "lattice_primitives",
+        "ugv_omni_2cm_lattice.json",
+    )
 
     use_sim_time = LaunchConfiguration("use_sim_time")
     use_sim_time_param = ParameterValue(use_sim_time, value_type=bool)
     params_file = LaunchConfiguration("params_file")
-    config_preset = LaunchConfiguration("config_preset")
-    config_overlay = LaunchConfiguration("config_overlay")
-    resolved_params_file = LaunchConfiguration("resolved_params_file")
-    generated_config_dir = LaunchConfiguration("generated_config_dir")
+    effective_params_file = LaunchConfiguration("effective_params_file")
     map_yaml = LaunchConfiguration("map")
     map_frame = LaunchConfiguration("map_frame")
     autostart = LaunchConfiguration("autostart")
@@ -34,28 +37,15 @@ def generate_launch_description():
     use_rviz = LaunchConfiguration("use_rviz")
     auto_initial_pose = LaunchConfiguration("auto_initial_pose")
     default_rviz_config = os.path.join(bringup_share, "config", "rviz", "navigation.rviz")
-
-    def prepare_nav2_params(context):
-        temp_dir, merged_path = create_merged_nav2_params(
-            config_dir=config_dir,
-            config_preset=config_preset.perform(context),
-            params_file=params_file.perform(context),
-            config_overlay=config_overlay.perform(context),
-        )
-        return [
-            SetLaunchConfiguration("generated_config_dir", temp_dir),
-            SetLaunchConfiguration("resolved_params_file", merged_path),
-        ]
-
-    prepare_nav2_params_action = OpaqueFunction(function=prepare_nav2_params)
-
-    def cleanup_generated_params(context, *args, **kwargs):
-        cleanup_temp_dir(generated_config_dir.perform(context))
-        return []
-
-    cleanup_generated_params_action = RegisterEventHandler(
-        OnShutdown(on_shutdown=[OpaqueFunction(function=cleanup_generated_params)])
+    rewritten_params = RewrittenYaml(
+        source_file=effective_params_file,
+        param_rewrites={"lattice_filepath": lattice_filepath},
+        convert_types=True,
     )
+
+    def resolve_effective_params_file(context):
+        resolved_params_file = params_file.perform(context).strip() or default_params_file
+        return [SetLaunchConfiguration("effective_params_file", resolved_params_file)]
 
     nav2_launch = GroupAction(
         actions=[
@@ -75,7 +65,7 @@ def generate_launch_description():
                     "slam": "False",
                     "map": map_yaml,
                     "use_sim_time": use_sim_time,
-                    "params_file": resolved_params_file,
+                    "params_file": rewritten_params,
                     "autostart": autostart,
                     "log_level": log_level,
                 }.items(),
@@ -116,16 +106,12 @@ def generate_launch_description():
             DeclareLaunchArgument("log_level", default_value="info"),
             DeclareLaunchArgument("use_rviz", default_value="true"),
             DeclareLaunchArgument("auto_initial_pose", default_value="false"),
-            DeclareLaunchArgument("params_file", default_value=""),
-            DeclareLaunchArgument("config_preset", default_value="hw"),
-            DeclareLaunchArgument("config_overlay", default_value=""),
-            DeclareLaunchArgument("resolved_params_file", default_value=""),
-            DeclareLaunchArgument("generated_config_dir", default_value=""),
+            DeclareLaunchArgument("params_file", default_value=default_params_file),
+            DeclareLaunchArgument("effective_params_file", default_value=default_params_file),
             DeclareLaunchArgument("map", default_value=default_map_yaml),
             DeclareLaunchArgument("map_frame", default_value="ugv_map"),
             DeclareLaunchArgument("rviz_config", default_value=default_rviz_config),
-            prepare_nav2_params_action,
-            cleanup_generated_params_action,
+            OpaqueFunction(function=resolve_effective_params_file),
             nav2_launch,
             rviz_launch,
             initial_pose_pub,

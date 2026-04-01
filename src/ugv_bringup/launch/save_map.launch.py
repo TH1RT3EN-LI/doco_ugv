@@ -4,13 +4,9 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 
-from ugv_bringup.launch_helpers import runtime_maps_dir
-
 
 def generate_launch_description():
-    default_output_dir = runtime_maps_dir()
     map_name = LaunchConfiguration("map_name")
-    output_dir = LaunchConfiguration("output_dir")
     wait_timeout = LaunchConfiguration("wait_timeout")
     use_sim_time = LaunchConfiguration("use_sim_time")
 
@@ -20,10 +16,7 @@ def generate_launch_description():
         name="save_map_client_node",
         output="screen",
         parameters=[
-            {
-                "map_name": map_name,
-                "output_dir": output_dir,
-            },
+            {"map_name": map_name},
             {
                 "wait_timeout": ParameterValue(wait_timeout, value_type=float),
                 "use_sim_time": ParameterValue(use_sim_time, value_type=bool),
@@ -34,7 +27,6 @@ def generate_launch_description():
     return LaunchDescription(
         [
             DeclareLaunchArgument("map_name", default_value="auto"),
-            DeclareLaunchArgument("output_dir", default_value=default_output_dir),
             DeclareLaunchArgument("wait_timeout", default_value="30"),
             DeclareLaunchArgument("use_sim_time", default_value="false"),
             save_map_client,

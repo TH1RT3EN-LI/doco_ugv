@@ -239,7 +239,7 @@
     </link>
 
     <joint name="${robot_prefix}lidar_joint" type="fixed">
-      <origin xyz="0.1 0 0.11" rpy="0 0 0" />
+      <origin xyz="0.085 0 0.11" rpy="0 0 0" />
       <parent link="${base_link_name}" />
       <child link="${laser_link}" />
     </joint>

@@ -7,7 +7,7 @@ from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import EnvironmentVariable, LaunchConfiguration, PathJoinSubstitution
 
-from ugv_bringup.launch_helpers import resolve_default_map_yaml
+from ugv_bringup.launch_helpers import default_nav2_params_path, resolve_default_map_yaml
 
 
 def generate_launch_description():
@@ -17,6 +17,7 @@ def generate_launch_description():
     bringup_share = get_package_share_directory("ugv_bringup")
     orbbec_camera_share = get_package_share_directory("orbbec_camera")
     default_map_yaml = resolve_default_map_yaml(bringup_share)
+    default_nav2_params_file = default_nav2_params_path(bringup_share)
 
     use_sim_time = LaunchConfiguration("use_sim_time")
     use_rviz = LaunchConfiguration("use_rviz")
@@ -32,8 +33,6 @@ def generate_launch_description():
     imu0 = LaunchConfiguration("imu0")
     map_yaml = LaunchConfiguration("map")
     params_file = LaunchConfiguration("params_file")
-    config_preset = LaunchConfiguration("config_preset")
-    config_overlay = LaunchConfiguration("config_overlay")
     rviz_config = LaunchConfiguration("rviz_config")
     global_frame = LaunchConfiguration("global_frame")
     ugv_map_frame = LaunchConfiguration("ugv_map_frame")
@@ -63,8 +62,6 @@ def generate_launch_description():
             "map": map_yaml,
             "map_frame": ugv_map_frame,
             "params_file": params_file,
-            "config_preset": config_preset,
-            "config_overlay": config_overlay,
             "log_level": log_level,
             "auto_initial_pose": auto_initial_pose,
             "rviz_config": rviz_config,
@@ -119,9 +116,7 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument("publish_global_map_tf", default_value="true"),
             DeclareLaunchArgument("map", default_value=default_map_yaml),
-            DeclareLaunchArgument("params_file", default_value=""),
-            DeclareLaunchArgument("config_preset", default_value="hw"),
-            DeclareLaunchArgument("config_overlay", default_value=""),
+            DeclareLaunchArgument("params_file", default_value=default_nav2_params_file),
             DeclareLaunchArgument("rviz_config", default_value=os.path.join(bringup_share, "config", "rviz", "navigation.rviz")),
             base_launch,
             depth_camera_launch,
