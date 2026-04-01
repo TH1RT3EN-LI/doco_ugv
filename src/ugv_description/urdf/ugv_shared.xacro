@@ -105,7 +105,7 @@
     <xacro:property name="base_footprint_link" value="${robot_prefix}base_footprint" />
     <xacro:property name="base_link_name" value="${robot_prefix}base_link" />
     <xacro:property name="computer_link" value="${robot_prefix}computer" />
-    <xacro:property name="tag16h5_plane_link" value="${robot_prefix}tag16h5_plane" />
+    <xacro:property name="tag36h11_plane_link" value="${robot_prefix}tag36h11_plane" />
     <xacro:property name="laser_link" value="${robot_prefix}laser" />
     <xacro:property name="imu_link_name" value="${robot_prefix}imu_link" />
     <xacro:property name="depth_cam_link" value="${robot_prefix}depth_cam" />
@@ -212,25 +212,25 @@
       <xacro:box_inertial m="0.5" x="0.13" y="0.13" z="0.05" />
     </link>
 
-    <joint name="${robot_prefix}tag16h5_plane_joint" type="fixed">
+    <joint name="${robot_prefix}tag36h11_plane_joint" type="fixed">
       <origin xyz="-0.15 0 0.1" rpy="0 0 0" />
       <parent link="${computer_link}" />
-      <child link="${tag16h5_plane_link}" />
+      <child link="${tag36h11_plane_link}" />
     </joint>
 
-    <link name="${tag16h5_plane_link}">
-      <visual name="${robot_prefix}tag16h5_plane_body_visual">
+    <link name="${tag36h11_plane_link}">
+      <visual name="${robot_prefix}tag36h11_plane_body_visual">
         <geometry>
           <mesh filename="package://ugv_description/meshes/plane.dae" scale="1 1 1" />
         </geometry>
       </visual>
-      <visual name="${robot_prefix}tag16h5_plane_marker_visual">
-        <origin xyz="0.07 0 0.027" rpy="0 0 -${PI/2}" />
+      <visual name="${robot_prefix}tag36h11_plane_marker_visual">
+        <origin xyz="0.03 0 0.027" rpy="0 0 0" />
         <geometry>
-          <mesh filename="package://ugv_description/meshes/tag16h5_plane.dae" scale="1 1 1" />
+          <mesh filename="package://ugv_description/meshes/tag36h11_plane.dae" scale="1 1 1" />
         </geometry>
       </visual>
-      <collision name="${robot_prefix}tag16h5_plane_collision">
+      <collision name="${robot_prefix}tag36h11_plane_collision">
         <geometry>
           <mesh filename="package://ugv_description/meshes/plane.dae" scale="1 1 1" />
         </geometry>

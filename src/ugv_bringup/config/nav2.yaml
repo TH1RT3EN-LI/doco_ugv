@@ -341,7 +341,7 @@ planner_server:
       change_penalty: 0.05
       non_straight_penalty: 1.05
       cost_penalty: 3.0
-      rotation_penalty: 5.0
+      rotation_penalty: 1.0
       retrospective_penalty: 0.015
       lattice_filepath: "__LATTICE_FILEPATH__"
       cache_obstacle_heuristic: false

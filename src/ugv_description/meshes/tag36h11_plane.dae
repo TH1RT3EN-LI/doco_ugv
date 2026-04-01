@@ -12,7 +12,7 @@
 
   <library_images>
     <image id="tag_image" name="tag_image">
-      <init_from>./tag16h5-0.png</init_from>
+      <init_from>./tag36h11-0.png</init_from>
     </image>
   </library_images>
 
@@ -73,10 +73,10 @@
       <mesh>
         <source id="tag_plane_positions">
           <float_array id="tag_plane_positions_array" count="12">
-            -0.1 -0.1 0
-             0.1 -0.1 0
-             0.1  0.1 0
-            -0.1  0.1 0
+            -0.125 -0.125 0
+             0.125 -0.125 0
+             0.125  0.125 0
+            -0.125  0.125 0
           </float_array>
           <technique_common>
             <accessor source="#tag_plane_positions_array" count="4" stride="3">
