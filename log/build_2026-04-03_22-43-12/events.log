@@ -1,0 +1,82 @@
+[0.000000] (-) TimerEvent: {}
+[0.000235] (-) JobUnselected: {'identifier': 'lslidar_driver'}
+[0.000249] (-) JobUnselected: {'identifier': 'lslidar_msgs'}
+[0.000259] (-) JobUnselected: {'identifier': 'ugv_bringup'}
+[0.000266] (-) JobUnselected: {'identifier': 'ugv_description'}
+[0.000274] (-) JobUnselected: {'identifier': 'ugv_safety_watchdog'}
+[0.000283] (-) JobUnselected: {'identifier': 'ugv_slam_tools'}
+[0.000290] (-) JobUnselected: {'identifier': 'ugv_teleop'}
+[0.000299] (ugv_base_driver) JobQueued: {'identifier': 'ugv_base_driver', 'dependencies': OrderedDict()}
+[0.000601] (ugv_base_driver) JobStarted: {'identifier': 'ugv_base_driver'}
+[0.005886] (ugv_base_driver) JobProgress: {'identifier': 'ugv_base_driver', 'progress': 'cmake'}
+[0.006256] (ugv_base_driver) Command: {'cmd': ['/usr/bin/cmake', '/home/th1rt3en/doco/dev_full/src/workspace/doco_ugv/src/ugv_base_driver', '-DCMAKE_INSTALL_PREFIX=/home/th1rt3en/doco/dev_full/src/workspace/doco_ugv/install/ugv_base_driver'], 'cwd': '/home/th1rt3en/doco/dev_full/src/workspace/doco_ugv/build/ugv_base_driver', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('VSCODE_CWD', '/home/th1rt3en'), ('VSCODE_ESM_ENTRYPOINT', 'vs/workbench/api/node/extensionHostProcess'), ('HTTPS_PROXY', 'http://127.0.0.1:7897'), ('CODEX_CI', '1'), ('LANGUAGE', 'en_US:en'), ('USER', 'th1rt3en'), ('LC_TIME', 'zh_CN.UTF-8'), ('CODEX_INTERNAL_ORIGINATOR_OVERRIDE', 'codex_vscode'), ('VSCODE_NLS_CONFIG', '{"userLocale":"zh-cn","osLocale":"en-us","resolvedLanguage":"zh-cn","defaultMessagesFile":"/usr/share/code/resources/app/out/nls.messages.json","languagePack":{"translationsConfigFile":"/home/th1rt3en/.config/Code/clp/03669bf149a9f1ccd9efdb51e6a2dbb8.zh-cn/tcf.json","messagesFile":"/home/th1rt3en/.config/Code/clp/03669bf149a9f1ccd9efdb51e6a2dbb8.zh-cn/61b3d0ab13be7dda2389f1d3e60a119c7f660cc3/nls.messages.json","corruptMarkerFile":"/home/th1rt3en/.config/Code/clp/03669bf149a9f1ccd9efdb51e6a2dbb8.zh-cn/corrupted.info"},"locale":"zh-cn","availableLanguages":{"*":"zh-cn"},"_languagePackId":"03669bf149a9f1ccd9efdb51e6a2dbb8.zh-cn","_languagePackSupport":true,"_translationsConfigFile":"/home/th1rt3en/.config/Code/clp/03669bf149a9f1ccd9efdb51e6a2dbb8.zh-cn/tcf.json","_cacheRoot":"/home/th1rt3en/.config/Code/clp/03669bf149a9f1ccd9efdb51e6a2dbb8.zh-cn","_resolvedLanguagePackCoreLocation":"/home/th1rt3en/.config/Code/clp/03669bf149a9f1ccd9efdb51e6a2dbb8.zh-cn/61b3d0ab13be7dda2389f1d3e60a119c7f660cc3","_corruptedFile":"/home/th1rt3en/.config/Code/clp/03669bf149a9f1ccd9efdb51e6a2dbb8.zh-cn/corrupted.info"}'), ('VSCODE_HANDLES_UNCAUGHT_ERRORS', 'true'), ('XDG_SESSION_TYPE', 'x11'), ('DEBUG', 'release'), ('SHLVL', '0'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/th1rt3en'), ('CHROME_DESKTOP', 'code.desktop'), ('DESKTOP_SESSION', 'ubuntu-xorg'), ('VSCODE_IPC_HOOK', '/run/user/1000/vscode-a48a504d-1.11-main.sock'), ('GIO_LAUNCHED_DESKTOP_FILE', '/usr/share/applications/code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('SDL_IM_MODULE', 'fcitx'), ('PAGER', 'cat'), ('LC_MONETARY', 'zh_CN.UTF-8'), ('MANAGERPID', '1433'), ('LC_CTYPE', 'C.UTF-8'), ('SYSTEMD_EXEC_PID', '3430'), ('NO_COLOR', '1'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', ''), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '24592'), ('VSCODE_CRASH_REPORTER_PROCESS_TYPE', 'extensionHost'), ('MANDATORY_PATH', '/usr/share/gconf/ubuntu-xorg.mandatory.path'), ('ROS_DISTRO', 'humble'), ('GTK_IM_MODULE', 'fcitx'), ('LOGNAME', 'th1rt3en'), ('JOURNAL_STREAM', '8:21288'), ('_', '/home/th1rt3en/.local/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_SESSION_CLASS', 'user'), ('DEFAULTS_PATH', '/usr/share/gconf/ubuntu-xorg.default.path'), ('RUST_LOG', 'warn'), ('USERNAME', 'th1rt3en'), ('TERM', 'dumb'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('FC_FONTATIONS', '1'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/gcc-arm-none-eabi-9-2020-q2-update/bin:/home/th1rt3en/.local/bin:/home/th1rt3en/.codex/tmp/arg0/codex-arg0o1rXel:/opt/gcc-arm-none-eabi-9-2020-q2-update/bin:/home/th1rt3en/.local/bin:/opt/ros/humble/bin:/opt/gcc-arm-none-eabi-9-2020-q2-update/bin:/home/th1rt3en/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/opt/xtensa-esp-elf/bin/:/home/th1rt3en/.vscode/extensions/openai.chatgpt-26.5401.11717-linux-x64/bin/linux-x86_64'), ('SESSION_MANAGER', 'local/TH1RT3EN-LAB:@/tmp/.ICE-unix/3407,unix/TH1RT3EN-LAB:/tmp/.ICE-unix/3407'), ('INVOCATION_ID', 'a5f0362bab614be99ba74da7e7162241'), ('PAPERSIZE', 'a4'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'zh_CN.UTF-8'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':1'), ('LANG', 'C.UTF-8'), ('XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('LC_TELEPHONE', 'zh_CN.UTF-8'), ('XMODIFIERS', '@im=fcitx'), ('GH_PAGER', 'cat'), ('XDG_SESSION_DESKTOP', 'ubuntu-xorg'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('ROS_DOMAIN_ID', '13'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('SHELL', '/bin/bash'), ('LC_NAME', 'zh_CN.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('ELECTRON_RUN_AS_NODE', '1'), ('GDMSESSION', 'ubuntu-xorg'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('CODEX_THREAD_ID', '019d535e-4ab8-71d0-9fb9-246db1b1361d'), ('LC_MEASUREMENT', 'zh_CN.UTF-8'), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('LC_IDENTIFICATION', 'zh_CN.UTF-8'), ('GIT_PAGER', 'cat'), ('QT_IM_MODULE', 'fcitx'), ('PWD', '/home/th1rt3en/doco/dev_full/src/workspace/doco_ugv/build/ugv_base_driver'), ('LC_ALL', 'C.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu-xorg:/etc/xdg'), ('VSCODE_CODE_CACHE_PATH', '/home/th1rt3en/.config/Code/CachedData/61b3d0ab13be7dda2389f1d3e60a119c7f660cc3'), ('XDG_DATA_DIRS', '/usr/share/ubuntu-xorg:/usr/share/gnome:/home/th1rt3en/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('HTTP_PROXY', 'http://127.0.0.1:7897'), ('LC_NUMERIC', 'zh_CN.UTF-8'), ('LC_PAPER', 'zh_CN.UTF-8'), ('COLCON', '1'), ('VSCODE_PID', '24592'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[0.050400] (ugv_base_driver) StdoutLine: {'line': b'-- The C compiler identification is GNU 11.4.0\n'}
+[0.095162] (ugv_base_driver) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 11.4.0\n'}
+[0.099741] (-) TimerEvent: {}
+[0.100891] (ugv_base_driver) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.158881] (ugv_base_driver) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[0.164658] (ugv_base_driver) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[0.164822] (ugv_base_driver) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.165021] (ugv_base_driver) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.167428] (ugv_base_driver) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.199842] (-) TimerEvent: {}
+[0.238201] (ugv_base_driver) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.244489] (ugv_base_driver) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[0.244750] (ugv_base_driver) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.244952] (ugv_base_driver) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.247040] (ugv_base_driver) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.13 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[0.299928] (-) TimerEvent: {}
+[0.360964] (ugv_base_driver) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter \n'}
+[0.400028] (-) TimerEvent: {}
+[0.434339] (ugv_base_driver) StdoutLine: {'line': b'-- Found rclcpp: 16.0.18 (/opt/ros/humble/share/rclcpp/cmake)\n'}
+[0.461634] (ugv_base_driver) StdoutLine: {'line': b'-- Found rosidl_generator_c: 3.1.8 (/opt/ros/humble/share/rosidl_generator_c/cmake)\n'}
+[0.464205] (ugv_base_driver) StdoutLine: {'line': b'-- Found rosidl_adapter: 3.1.8 (/opt/ros/humble/share/rosidl_adapter/cmake)\n'}
+[0.469029] (ugv_base_driver) StdoutLine: {'line': b'-- Found rosidl_generator_cpp: 3.1.8 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)\n'}
+[0.475955] (ugv_base_driver) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.486243] (ugv_base_driver) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[0.500126] (-) TimerEvent: {}
+[0.512952] (ugv_base_driver) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)\n'}
+[0.514192] (ugv_base_driver) StdoutLine: {'line': b'-- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)\n'}
+[0.591456] (ugv_base_driver) StdoutLine: {'line': b'-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  \n'}
+[0.600210] (-) TimerEvent: {}
+[0.617144] (ugv_base_driver) StdoutLine: {'line': b'-- Found FastRTPS: /opt/ros/humble/include  \n'}
+[0.657235] (ugv_base_driver) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_fastrtps_cpp' as default\n"}
+[0.662643] (ugv_base_driver) StdoutLine: {'line': b'-- Looking for pthread.h\n'}
+[0.700326] (-) TimerEvent: {}
+[0.730457] (ugv_base_driver) StdoutLine: {'line': b'-- Looking for pthread.h - found\n'}
+[0.730877] (ugv_base_driver) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[0.799531] (ugv_base_driver) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success\n'}
+[0.800354] (ugv_base_driver) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[0.800445] (-) TimerEvent: {}
+[0.837013] (ugv_base_driver) StdoutLine: {'line': b'-- Found geometry_msgs: 4.9.1 (/opt/ros/humble/share/geometry_msgs/cmake)\n'}
+[0.847003] (ugv_base_driver) StdoutLine: {'line': b'-- Found nav_msgs: 4.9.1 (/opt/ros/humble/share/nav_msgs/cmake)\n'}
+[0.863508] (ugv_base_driver) StdoutLine: {'line': b'-- Found sensor_msgs: 4.9.1 (/opt/ros/humble/share/sensor_msgs/cmake)\n'}
+[0.881265] (ugv_base_driver) StdoutLine: {'line': b'-- Found tf2: 0.25.19 (/opt/ros/humble/share/tf2/cmake)\n'}
+[0.892652] (ugv_base_driver) StdoutLine: {'line': b'-- Found tf2_geometry_msgs: 0.25.19 (/opt/ros/humble/share/tf2_geometry_msgs/cmake)\n'}
+[0.900571] (-) TimerEvent: {}
+[0.906088] (ugv_base_driver) StdoutLine: {'line': b'-- Found eigen3_cmake_module: 0.1.1 (/opt/ros/humble/share/eigen3_cmake_module/cmake)\n'}
+[0.907018] (ugv_base_driver) StdoutLine: {'line': b'-- Found Eigen3: TRUE (found version "3.4.0") \n'}
+[0.907118] (ugv_base_driver) StdoutLine: {'line': b'-- Ensuring Eigen3 include directory is part of orocos-kdl CMake target\n'}
+[0.973967] (ugv_base_driver) StderrLine: {'line': b'CMake Error at CMakeLists.txt:17 (find_package):\n'}
+[0.974198] (ugv_base_driver) StderrLine: {'line': b'  By not providing "Findserial_driver.cmake" in CMAKE_MODULE_PATH this\n'}
+[0.974266] (ugv_base_driver) StderrLine: {'line': b'  project has asked CMake to find a package configuration file provided by\n'}
+[0.974319] (ugv_base_driver) StderrLine: {'line': b'  "serial_driver", but CMake did not find one.\n'}
+[0.974373] (ugv_base_driver) StderrLine: {'line': b'\n'}
+[0.974423] (ugv_base_driver) StderrLine: {'line': b'  Could not find a package configuration file provided by "serial_driver"\n'}
+[0.974469] (ugv_base_driver) StderrLine: {'line': b'  with any of the following names:\n'}
+[0.974515] (ugv_base_driver) StderrLine: {'line': b'\n'}
+[0.974560] (ugv_base_driver) StderrLine: {'line': b'    serial_driverConfig.cmake\n'}
+[0.974605] (ugv_base_driver) StderrLine: {'line': b'    serial_driver-config.cmake\n'}
+[0.974650] (ugv_base_driver) StderrLine: {'line': b'\n'}
+[0.974677] (ugv_base_driver) StderrLine: {'line': b'  Add the installation prefix of "serial_driver" to CMAKE_PREFIX_PATH or set\n'}
+[0.974724] (ugv_base_driver) StderrLine: {'line': b'  "serial_driver_DIR" to a directory containing one of the above files.  If\n'}
+[0.974749] (ugv_base_driver) StderrLine: {'line': b'  "serial_driver" provides a separate development package or SDK, be sure it\n'}
+[0.974772] (ugv_base_driver) StderrLine: {'line': b'  has been installed.\n'}
+[0.974795] (ugv_base_driver) StderrLine: {'line': b'\n'}
+[0.974817] (ugv_base_driver) StderrLine: {'line': b'\n'}
+[0.974840] (ugv_base_driver) StdoutLine: {'line': b'-- Configuring incomplete, errors occurred!\n'}
+[0.974868] (ugv_base_driver) StdoutLine: {'line': b'See also "/home/th1rt3en/doco/dev_full/src/workspace/doco_ugv/build/ugv_base_driver/CMakeFiles/CMakeOutput.log".\n'}
+[0.985546] (ugv_base_driver) CommandEnded: {'returncode': 1}
+[1.001616] (-) TimerEvent: {}
+[1.004756] (ugv_base_driver) JobEnded: {'identifier': 'ugv_base_driver', 'rc': 1}
+[1.015253] (-) EventReactorShutdown: {}

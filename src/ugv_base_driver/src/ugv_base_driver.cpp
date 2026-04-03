@@ -149,7 +149,7 @@ private:
     }
     void transmit_frame(const std::array<uint8_t, duojin01::SEND_DATA_SIZE> &frame)
     {
-        std::copy(frame.begin(), frame.end(), tx_buffer_.begin());
+        tx_buffer_.assign(frame.begin(), frame.end());
         serial_->send(tx_buffer_);
     }
     /**
@@ -681,7 +681,7 @@ private:
     // -------- serial --------
     drivers::common::IoContext io_ctx_;
     std::unique_ptr<drivers::serial_driver::SerialPort> serial_;
-    std::vector<uint8_t> tx_buffer_{duojin01::SEND_DATA_SIZE};
+    std::vector<uint8_t> tx_buffer_ = std::vector<uint8_t>(duojin01::SEND_DATA_SIZE);
 
     // Driver runtime state
     duojin01::VelPosData robot_pos_;
