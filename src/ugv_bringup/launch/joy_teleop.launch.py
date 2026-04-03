@@ -41,7 +41,7 @@ def generate_launch_description():
         executable="teleop_node",
         name="teleop_slow",
         parameters=[joy_teleop_slow_config_path, {"use_sim_time": use_sim_time_param}],
-        remappings=[("/ugv/cmd_vel", "/ugv/cmd_vel_slow")],
+        remappings=[("joy", "/ugv/joy"), ("cmd_vel", "/ugv/cmd_vel_slow")],
     )
 
     joy_teleop_normal = Node(
@@ -49,7 +49,7 @@ def generate_launch_description():
         executable="teleop_node",
         name="teleop_normal",
         parameters=[joy_teleop_normal_config_path, {"use_sim_time": use_sim_time_param}],
-        remappings=[("/ugv/cmd_vel", "/ugv/cmd_vel_normal")],
+        remappings=[("joy", "/ugv/joy"), ("cmd_vel", "/ugv/cmd_vel_normal")],
     )
 
     joy_teleop_estop = Node(
@@ -57,7 +57,7 @@ def generate_launch_description():
         executable="teleop_node",
         name="teleop_estop",
         parameters=[joy_teleop_estop_config_path, {"use_sim_time": use_sim_time_param}],
-        remappings=[("/ugv/cmd_vel", "/ugv/cmd_vel_estop")],
+        remappings=[("joy", "/ugv/joy"), ("cmd_vel", "/ugv/cmd_vel_estop")],
     )
 
     joy_launcher = Node(
