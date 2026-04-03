@@ -91,8 +91,8 @@ def generate_launch_description():
             SetEnvironmentVariable("USE_SIM_TIME", use_sim_time),
             DeclareLaunchArgument("use_rviz", default_value="true"),
             DeclareLaunchArgument("autostart", default_value="true"),
-            DeclareLaunchArgument("use_foxglove", default_value="true"),
-            DeclareLaunchArgument("auto_initial_pose", default_value="false"),
+            DeclareLaunchArgument("use_foxglove", default_value="false"),
+            DeclareLaunchArgument("auto_initial_pose", default_value="true"),
             DeclareLaunchArgument(
                 "use_depth_camera",
                 default_value=EnvironmentVariable("UGV_USE_DEPTH_CAMERA", default_value="false"),

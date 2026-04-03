@@ -244,7 +244,7 @@ local_costmap:
       height: 2
       resolution: 0.01
       footprint: "[[0.24, 0.24], [0.24, -0.24], [-0.24, -0.24], [-0.24, 0.24]]"
-      footprint_padding: 0.0
+      footprint_padding: 0.03
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
@@ -279,7 +279,7 @@ global_costmap:
       robot_base_frame: ugv_base_footprint
       use_sim_time: false
       footprint: "[[0.24, 0.24], [0.24, -0.24], [-0.24, -0.24], [-0.24, 0.24]]"
-      footprint_padding: 0.0
+      footprint_padding: 0.03
       resolution: 0.02
       track_unknown_space: true
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
