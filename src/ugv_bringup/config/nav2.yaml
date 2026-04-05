@@ -134,12 +134,12 @@ controller_server:
       time_steps: 40
       model_dt: 0.05
       batch_size: 1200
-      vx_std: 0.2
-      vy_std: 0.2
+      vx_std: 0.18
+      vy_std: 0.18
       wz_std: 0.45
-      vx_max: 0.45
+      vx_max: 0.38
       vx_min: -0.5
-      vy_max: 0.15
+      vy_max: 0.12
       wz_max: 1.15
       ax_max: 3.0
       ax_min: -3.0
@@ -184,9 +184,9 @@ controller_server:
       CostCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 11.0
+        cost_weight: 13.0
         critical_cost: 250.0
-        near_collision_cost: 150.0
+        near_collision_cost: 220.0
         consider_footprint: true
         collision_cost: 1000000.0
         near_goal_distance: 0.4
@@ -196,13 +196,13 @@ controller_server:
         enabled: true
         cost_power: 1
         consider_footprint: true
-        critical_weight: 45.0
-        repulsion_weight: 2.6
+        critical_weight: 70.0
+        repulsion_weight: 3.6
         collision_cost: 1000000.0
-        collision_margin_distance: 0.04
+        collision_margin_distance: 0.08
         near_goal_distance: 0.4
         cost_scaling_factor: 10.0
-        inflation_radius: 0.20
+        inflation_radius: 0.24
       PathAlignCritic:
         enabled: true
         cost_power: 1
@@ -252,7 +252,7 @@ local_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 10.0
-        inflation_radius: 0.20
+        inflation_radius: 0.24
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: true
@@ -385,8 +385,8 @@ behavior_server:
     robot_base_frame: ugv_base_footprint
     transform_tolerance: 0.2
     use_sim_time: false
-    simulate_ahead_time: 2.0
-    max_rotational_vel: 0.8
+    simulate_ahead_time: 1.0
+    max_rotational_vel: 0.6
     min_rotational_vel: 0.2
     rotational_acc_lim: 4.0
 
@@ -411,8 +411,8 @@ velocity_smoother:
     smoothing_frequency: 20.0
     scale_velocities: false
     feedback: "CLOSED_LOOP"
-    max_velocity: [0.5, 0.15, 1.15]
-    min_velocity: [-0.5, -0.15, -1.15]
+    max_velocity: [0.38, 0.12, 1.15]
+    min_velocity: [-0.5, -0.12, -1.15]
     max_accel: [3.0, 3.0, 4.0]
     max_decel: [-3.0, -3.0, -4.0]
     odom_topic: "/ugv/odometry/filtered"
