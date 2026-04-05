@@ -1,0 +1,38 @@
+collision_monitor:
+  ros__parameters:
+    enabled: true
+    base_frame_id: "ugv_base_footprint"
+    odom_frame_id: "ugv_odom"
+    cmd_vel_in_topic: "/ugv/cmd_vel_nav_raw"
+    cmd_vel_out_topic: "/ugv/cmd_vel_nav"
+    state_topic: "/ugv/collision_monitor_state"
+    transform_tolerance: 0.2
+    source_timeout: 0.2
+    base_shift_correction: true
+    stop_pub_timeout: 1.0
+    enable_stamped_cmd_vel: false
+    use_realtime_priority: false
+    polygons: ["PolygonStop", "PolygonSlowdown"]
+    PolygonStop:
+      type: "polygon"
+      points: "[[0.33, 0.33], [0.33, -0.33], [-0.33, -0.33], [-0.33, 0.33]]"
+      action_type: "stop"
+      max_points: 3
+      visualize: true
+      polygon_pub_topic: "/ugv/collision_monitor/polygon_stop"
+      enabled: true
+    PolygonSlowdown:
+      type: "polygon"
+      points: "[[0.42, 0.42], [0.42, -0.42], [-0.42, -0.42], [-0.42, 0.42]]"
+      action_type: "slowdown"
+      max_points: 3
+      slowdown_ratio: 0.5
+      visualize: true
+      polygon_pub_topic: "/ugv/collision_monitor/polygon_slowdown"
+      enabled: true
+    observation_sources: ["scan"]
+    scan:
+      source_timeout: 0.2
+      type: "scan"
+      topic: "/ugv/scan"
+      enabled: true

@@ -28,6 +28,7 @@ def generate_launch_description():
     depth_camera_name = LaunchConfiguration("depth_camera_name")
     depth_camera_serial_number = LaunchConfiguration("depth_camera_serial_number")
     depth_camera_usb_port = LaunchConfiguration("depth_camera_usb_port")
+    enable_collision_monitor = LaunchConfiguration("enable_collision_monitor")
     log_level = LaunchConfiguration("log_level")
     odom0 = LaunchConfiguration("odom0")
     imu0 = LaunchConfiguration("imu0")
@@ -62,6 +63,7 @@ def generate_launch_description():
             "map": map_yaml,
             "map_frame": ugv_map_frame,
             "params_file": params_file,
+            "enable_collision_monitor": enable_collision_monitor,
             "log_level": log_level,
             "auto_initial_pose": auto_initial_pose,
             "rviz_config": rviz_config,
@@ -93,6 +95,7 @@ def generate_launch_description():
             DeclareLaunchArgument("autostart", default_value="true"),
             DeclareLaunchArgument("use_foxglove", default_value="false"),
             DeclareLaunchArgument("auto_initial_pose", default_value="true"),
+            DeclareLaunchArgument("enable_collision_monitor", default_value="false"),
             DeclareLaunchArgument(
                 "use_depth_camera",
                 default_value=EnvironmentVariable("UGV_USE_DEPTH_CAMERA", default_value="false"),
