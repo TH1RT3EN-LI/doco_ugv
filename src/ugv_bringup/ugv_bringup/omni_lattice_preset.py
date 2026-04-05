@@ -192,8 +192,8 @@ def build_rich_omni_spec(
         ("front_right", -math.pi / 4.0, ("micro", "short")),
         ("back_left", 3.0 * math.pi / 4.0, ("micro", "short")),
         ("back_right", -3.0 * math.pi / 4.0, ("micro", "short")),
-        ("left", math.pi / 2.0, ("micro", "short")),
-        ("right", -math.pi / 2.0, ("micro", "short")),
+        ("left", math.pi / 2.0, ("micro", "short", "medium", "long")),
+        ("right", -math.pi / 2.0, ("micro", "short", "medium", "long")),
     ]
 
     for family_name, start_indices in family_indices.items():

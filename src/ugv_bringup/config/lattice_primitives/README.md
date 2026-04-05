@@ -15,8 +15,8 @@ Update the source spec instead, then regenerate and validate.
 
 Rich preset intent:
 
-- Pure lateral moves are for micro-adjustment only.
-- Larger sideways progress should mainly come from `front_left/right` and `back_left/right` templates.
+- Lateral moves are available from `micro` through `long` so the planner can express stronger omni motion when it is beneficial.
+- `front_left/right` and `back_left/right` templates are still kept for obstacle-aware diagonal progress and heading-coupled sidestepping.
 - Keep `config/nav2.yaml` Smac lattice penalties aligned with the active rich lattice when changing motion mix or step scales.
 
 Commands:
