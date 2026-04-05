@@ -202,7 +202,7 @@ controller_server:
         collision_margin_distance: 0.08
         near_goal_distance: 0.4
         cost_scaling_factor: 7.0
-        inflation_radius: 0.31
+        inflation_radius: 0.26
       PathAlignCritic:
         enabled: true
         cost_power: 1
@@ -252,7 +252,7 @@ local_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 7.0
-        inflation_radius: 0.31
+        inflation_radius: 0.26
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: true
@@ -304,7 +304,7 @@ global_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 7.0
-        inflation_radius: 0.31
+        inflation_radius: 0.26
       always_send_full_costmap: true
 
 map_server:
