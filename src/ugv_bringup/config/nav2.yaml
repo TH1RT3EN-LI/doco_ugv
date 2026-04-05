@@ -135,11 +135,11 @@ controller_server:
       model_dt: 0.05
       batch_size: 1200
       vx_std: 0.2
-      vy_std: 0.08
+      vy_std: 0.2
       wz_std: 0.45
       vx_max: 0.45
       vx_min: -0.5
-      vy_max: 0.10
+      vy_max: 0.15
       wz_max: 1.15
       ax_max: 3.0
       ax_min: -3.0
