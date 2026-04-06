@@ -1,1 +1,0 @@
-Invoking command in '/home/th1rt3en/doco/dev_full/src/workspace/doco_ugv/build/ugv_base_driver': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake /home/th1rt3en/doco/dev_full/src/workspace/doco_ugv/src/ugv_base_driver -DCMAKE_INSTALL_PREFIX=/home/th1rt3en/doco/dev_full/src/workspace/doco_ugv/install/ugv_base_driver

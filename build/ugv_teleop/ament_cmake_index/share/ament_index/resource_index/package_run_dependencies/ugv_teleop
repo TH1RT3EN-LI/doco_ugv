@@ -1,1 +1,0 @@
-rclcpp;sensor_msgs;geometry_msgs;rcl_interfaces;qtbase5-dev;ament_cmake_gtest
