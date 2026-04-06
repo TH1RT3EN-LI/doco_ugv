@@ -1,7 +1,7 @@
 /**:
   ros__parameters:
-    frequency: 50.0
-    sensor_timeout: 0.2
+    frequency: 30.0
+    sensor_timeout: 0.1
     two_d_mode: true
 
     map_frame: ugv_map
@@ -10,6 +10,7 @@
     world_frame: ugv_odom
 
     publish_tf: true
+    transform_time_offset: 0.02
 
     # xxxx0_config: [X,      Y,      Z,     # 第一组：位置 (Pose)
     #               roll,   pitch,  yaw,    # 第二组：姿态 (Orientation)

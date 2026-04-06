@@ -93,8 +93,8 @@ def generate_launch_description():
             {"topic": "/ugv/initialpose"},
             {"frame_id": map_frame},
             {"x": 0.0, "y": 0.0, "yaw": 0.0},
-            {"delay_sec": 2.0, "publish_count": 10, "publish_period_sec": 0.2},
-            {"require_subscriber": False},
+            {"delay_sec": 4.0, "publish_count": 10, "publish_period_sec": 0.25},
+            {"require_subscriber": True},
         ],
         condition=IfCondition(auto_initial_pose),
     )
