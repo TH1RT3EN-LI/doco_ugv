@@ -137,10 +137,10 @@ controller_server:
       vx_std: 0.12
       vy_std: 0.12
       wz_std: 0.30
-      vx_max: 0.28
-      vx_min: -0.28
-      vy_max: 0.28
-      wz_max: 0.75
+      vx_max: 0.30
+      vx_min: -0.30
+      vy_max: 0.30
+      wz_max: 0.80
       ax_max: 1.8
       ax_min: -1.8
       ay_max: 1.8
@@ -399,8 +399,8 @@ velocity_smoother:
     smoothing_frequency: 15.0
     scale_velocities: false
     feedback: "CLOSED_LOOP"
-    max_velocity: [0.28, 0.28, 0.75]
-    min_velocity: [-0.28, -0.28, -0.75]
+    max_velocity: [0.30, 0.30, 0.80]
+    min_velocity: [-0.30, -0.30, -0.80]
     max_accel: [1.8, 1.8, 2.2]
     max_decel: [-1.8, -1.8, -2.2]
     odom_topic: "/ugv/odometry/filtered"
