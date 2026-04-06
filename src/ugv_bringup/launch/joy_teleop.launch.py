@@ -27,7 +27,11 @@ def generate_launch_description():
         executable="joy_node",
         name="joy_node",
         parameters=[joy_config_path, {"use_sim_time": use_sim_time_param}],
-        remappings=[("/joy", "/ugv/joy_raw")],
+        remappings=[
+            ("/joy", "/ugv/joy_raw"),
+            ("/joy/set_feedback", "/ugv/joy/set_feedback"),
+            ("/joy/set_feedback_array", "/ugv/joy/set_feedback_array"),
+        ],
     )
 
     joy_axis_selector = Node(

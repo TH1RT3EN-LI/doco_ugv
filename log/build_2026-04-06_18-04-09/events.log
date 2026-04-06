@@ -1,0 +1,12 @@
+[0.000000] (-) TimerEvent: {}
+[0.000483] (-) JobUnselected: {'identifier': 'lslidar_driver'}
+[0.000517] (-) JobUnselected: {'identifier': 'lslidar_msgs'}
+[0.000537] (-) JobUnselected: {'identifier': 'ugv_base_driver'}
+[0.000553] (-) JobUnselected: {'identifier': 'ugv_description'}
+[0.000569] (-) JobUnselected: {'identifier': 'ugv_safety_watchdog'}
+[0.000585] (-) JobUnselected: {'identifier': 'ugv_slam_tools'}
+[0.000599] (-) JobUnselected: {'identifier': 'ugv_teleop'}
+[0.000616] (ugv_bringup) JobQueued: {'identifier': 'ugv_bringup', 'dependencies': OrderedDict([('lslidar_msgs', '/home/th1rt3en/doco/dev_full/src/workspace/doco_ugv/install/lslidar_msgs'), ('ugv_base_driver', '/home/th1rt3en/doco/dev_full/src/workspace/doco_ugv/install/ugv_base_driver'), ('ugv_description', '/home/th1rt3en/doco/dev_full/src/workspace/doco_ugv/install/ugv_description'), ('ugv_safety_watchdog', '/home/th1rt3en/doco/dev_full/src/workspace/doco_ugv/install/ugv_safety_watchdog'), ('ugv_slam_tools', '/home/th1rt3en/doco/dev_full/src/workspace/doco_ugv/install/ugv_slam_tools'), ('ugv_teleop', '/home/th1rt3en/doco/dev_full/src/workspace/doco_ugv/install/ugv_teleop'), ('lslidar_driver', '/home/th1rt3en/doco/dev_full/src/workspace/doco_ugv/install/lslidar_driver')])}
+[0.000651] (ugv_bringup) JobStarted: {'identifier': 'ugv_bringup'}
+[0.008650] (ugv_bringup) JobEnded: {'identifier': 'ugv_bringup', 'rc': 1}
+[0.019658] (-) EventReactorShutdown: {}

@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<robot name="duojin01" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:arg name="prefix" default="ugv_" />
+  <xacro:property name="robot_prefix" value="$(arg prefix)" />
+  <xacro:include filename="ugv_shared.xacro" />
+  <xacro:ugv_shared_model robot_prefix="${robot_prefix}" use_shaft_collision="false" />
+</robot>
