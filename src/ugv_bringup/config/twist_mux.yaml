@@ -4,7 +4,7 @@ twist_mux:
     topics:
       navigation:
         topic: /ugv/cmd_vel_nav
-        timeout: 0.5
+        timeout: 0.2
         priority: 80
 
       estop:
