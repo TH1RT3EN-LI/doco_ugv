@@ -291,8 +291,8 @@ global_costmap:
         map_subscribe_transient_local: true
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 12.0
-        inflation_radius: 0.22
+        cost_scaling_factor: 8.0
+        inflation_radius: 0.30
       always_send_full_costmap: true
 
 map_server:
@@ -328,7 +328,7 @@ planner_server:
       reverse_penalty: 1.0
       change_penalty: 0.06
       non_straight_penalty: 1.15
-      cost_penalty: 2.2
+      cost_penalty: 3.2
       rotation_penalty: 2.0
       retrospective_penalty: 0.015
       lattice_filepath: "__LATTICE_FILEPATH__"
@@ -337,7 +337,7 @@ planner_server:
       smooth_path: true
       smoother:
         max_iterations: 1000
-        w_smooth: 0.3
+        w_smooth: 0.35
         w_data: 0.2
         tolerance: 1.0e-10
         do_refinement: true
