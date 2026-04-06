@@ -137,9 +137,9 @@ controller_server:
       vx_std: 0.12
       vy_std: 0.12
       wz_std: 0.30
-      vx_max: 0.30
-      vx_min: -0.30
-      vy_max: 0.30
+      vx_max: 0.25
+      vx_min: -0.25
+      vy_max: 0.25
       wz_max: 0.80
       ax_max: 1.8
       ax_min: -1.8
@@ -199,7 +199,7 @@ controller_server:
         critical_weight: 45.0
         repulsion_weight: 1.8
         collision_cost: 1000000.0
-        collision_margin_distance: 0.03
+        collision_margin_distance: 0.04
         near_goal_distance: 0.4
         cost_scaling_factor: 8.0
         inflation_radius: 0.22
@@ -399,8 +399,8 @@ velocity_smoother:
     smoothing_frequency: 15.0
     scale_velocities: false
     feedback: "CLOSED_LOOP"
-    max_velocity: [0.30, 0.30, 0.80]
-    min_velocity: [-0.30, -0.30, -0.80]
+    max_velocity: [0.25, 0.25, 0.80]
+    min_velocity: [-0.25, -0.25, -0.80]
     max_accel: [1.8, 1.8, 2.2]
     max_decel: [-1.8, -1.8, -2.2]
     odom_topic: "/ugv/odometry/filtered"
