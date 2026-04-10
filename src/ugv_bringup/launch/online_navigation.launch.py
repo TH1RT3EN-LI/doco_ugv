@@ -21,7 +21,7 @@ from launch_ros.parameter_descriptions import ParameterValue
 def generate_launch_description():
     bringup_share = get_package_share_directory("ugv_bringup")
     nav2_share = get_package_share_directory("nav2_bringup")
-    default_params_file = os.path.join(bringup_share, "config", "nav2_online_slam.yaml")
+    default_params_file = os.path.join(bringup_share, "config", "nav2_online_slam_tuned.yaml")
     default_rviz_config = os.path.join(bringup_share, "config", "rviz", "online_navigation.rviz")
     lattice_filepath = os.path.join(
         bringup_share,
