@@ -286,6 +286,9 @@ global_costmap:
       global_frame: ugv_map
       robot_base_frame: ugv_base_footprint
       use_sim_time: false
+      rolling_window: true
+      width: 12
+      height: 12
       footprint: "[[0.21, 0.21], [0.21, -0.21], [-0.21, -0.21], [-0.21, 0.21]]"
       footprint_padding: 0.0
       transform_tolerance: 0.40
