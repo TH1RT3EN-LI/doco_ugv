@@ -1,5 +1,8 @@
-# Nav2 parameters for online SLAM navigation.
-# This file is intentionally separate from nav2.yaml so map-based AMCL navigation keeps its original behavior.
+# Tuned Nav2 parameters for online SLAM navigation.
+# Focus:
+# - smoother online-SLAM navigation with less goal dithering
+# - lower costmap/DDS overhead than the original online config
+# - preserve conservative low-speed behavior
 
 amcl:
   ros__parameters:
@@ -116,7 +119,7 @@ controller_server:
     min_y_velocity_threshold: 0.005
     min_theta_velocity_threshold: 0.003
     odom_topic: /ugv/odometry/filtered
-    failure_tolerance: 0.3
+    failure_tolerance: 0.4
     progress_checker_plugin: "progress_checker"
     goal_checker_plugins: ["general_goal_checker"]
     controller_plugins: ["FollowPath"]
@@ -129,17 +132,17 @@ controller_server:
     general_goal_checker:
       stateful: true
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.05
-      yaw_goal_tolerance: 0.06
+      xy_goal_tolerance: 0.08
+      yaw_goal_tolerance: 0.10
 
     FollowPath:
       plugin: "nav2_mppi_controller::MPPIController"
-      time_steps: 24
+      time_steps: 30
       model_dt: 0.0666667
-      batch_size: 800
+      batch_size: 600
       vx_std: 0.12
       vy_std: 0.12
-      wz_std: 0.30
+      wz_std: 0.28
       vx_max: 0.25
       vx_min: -0.25
       vy_max: 0.25
@@ -149,13 +152,13 @@ controller_server:
       ay_max: 1.8
       az_max: 2.2
       iteration_count: 1
-      prune_distance: 1.2
-      transform_tolerance: 0.3
+      prune_distance: 1.6
+      transform_tolerance: 0.35
       temperature: 0.3
       gamma: 0.015
       motion_model: "Omni"
       visualize: false
-      reset_period: 1.0
+      reset_period: 1.5
       regenerate_noises: false
       TrajectoryVisualizer:
         trajectory_step: 5
@@ -177,78 +180,78 @@ controller_server:
       GoalCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 8.0
-        threshold_to_consider: 0.5
+        cost_weight: 7.0
+        threshold_to_consider: 0.6
       GoalAngleCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 6.0
-        threshold_to_consider: 0.3
+        cost_weight: 5.0
+        threshold_to_consider: 0.35
       CostCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 8.0
+        cost_weight: 6.0
         critical_cost: 250.0
         near_collision_cost: 220.0
         consider_footprint: true
         collision_cost: 1000000.0
-        near_goal_distance: 0.4
+        near_goal_distance: 0.35
         inflation_layer_name: "inflation_layer"
         trajectory_point_step: 2
       ObstaclesCritic:
         enabled: true
         cost_power: 1
         consider_footprint: true
-        critical_weight: 45.0
-        repulsion_weight: 1.8
+        critical_weight: 35.0
+        repulsion_weight: 1.2
         collision_cost: 1000000.0
         collision_margin_distance: 0.04
-        near_goal_distance: 0.4
-        cost_scaling_factor: 8.0
-        inflation_radius: 0.22
+        near_goal_distance: 0.35
+        cost_scaling_factor: 6.5
+        inflation_radius: 0.20
       PathAlignCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 7.5
+        cost_weight: 6.0
         max_path_occupancy_ratio: 0.05
         trajectory_point_step: 3
-        threshold_to_consider: 0.5
-        offset_from_furthest: 20
+        threshold_to_consider: 0.6
+        offset_from_furthest: 18
         use_path_orientations: false
       PathFollowCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 6.0
-        offset_from_furthest: 5
-        threshold_to_consider: 0.8
+        cost_weight: 5.0
+        offset_from_furthest: 6
+        threshold_to_consider: 0.9
       PathAngleCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 2.0
+        cost_weight: 1.5
         offset_from_furthest: 4
-        threshold_to_consider: 0.5
+        threshold_to_consider: 0.6
         max_angle_to_furthest: 1.0
         mode: 2
       TwirlingCritic:
         enabled: true
         cost_power: 1
-        cost_weight: 2.5
+        cost_weight: 1.5
 
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 15.0
-      publish_frequency: 8.0
+      update_frequency: 12.0
+      publish_frequency: 5.0
       global_frame: ugv_odom
       robot_base_frame: ugv_base_footprint
       use_sim_time: false
       rolling_window: true
-      width: 2
-      height: 2
-      resolution: 0.01
+      width: 3
+      height: 3
+      resolution: 0.02
       footprint: "[[0.21, 0.21], [0.21, -0.21], [-0.21, -0.21], [-0.21, 0.21]]"
-      footprint_padding: 0.005
-      transform_tolerance: 0.25
+      footprint_padding: 0.003
+      transform_tolerance: 0.30
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
@@ -256,8 +259,8 @@ local_costmap:
         map_subscribe_transient_local: true
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 8.0
-        inflation_radius: 0.22
+        cost_scaling_factor: 6.5
+        inflation_radius: 0.20
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: true
@@ -273,45 +276,30 @@ local_costmap:
           raytrace_min_range: 0.15
           obstacle_max_range: 2.5
           obstacle_min_range: 0.15
-      always_send_full_costmap: true
+      always_send_full_costmap: false
 
 global_costmap:
   global_costmap:
     ros__parameters:
-      update_frequency: 3.0
-      publish_frequency: 1.0
+      update_frequency: 2.0
+      publish_frequency: 0.5
       global_frame: ugv_map
       robot_base_frame: ugv_base_footprint
       use_sim_time: false
       footprint: "[[0.21, 0.21], [0.21, -0.21], [-0.21, -0.21], [-0.21, 0.21]]"
       footprint_padding: 0.0
-      transform_tolerance: 0.35
-      resolution: 0.03
+      transform_tolerance: 0.40
+      resolution: 0.04
       track_unknown_space: true
-      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      plugins: ["static_layer", "inflation_layer"]
       static_layer:
         plugin: "nav2_costmap_2d::StaticLayer"
         map_subscribe_transient_local: true
-      obstacle_layer:
-        plugin: "nav2_costmap_2d::ObstacleLayer"
-        enabled: true
-        footprint_clearing_enabled: true
-        observation_sources: scan
-        scan:
-          topic: /ugv/scan
-          max_obstacle_height: 2.0
-          clearing: true
-          marking: true
-          data_type: "LaserScan"
-          raytrace_max_range: 5.0
-          raytrace_min_range: 0.15
-          obstacle_max_range: 4.0
-          obstacle_min_range: 0.15
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
-        cost_scaling_factor: 8.0
-        inflation_radius: 0.30
-      always_send_full_costmap: true
+        cost_scaling_factor: 6.5
+        inflation_radius: 0.25
+      always_send_full_costmap: false
 
 map_server:
   ros__parameters:
@@ -329,32 +317,32 @@ map_saver:
 
 planner_server:
   ros__parameters:
-    expected_planner_frequency: 5.0
+    expected_planner_frequency: 3.0
     use_sim_time: false
     planner_plugins: ["GridBased"]
     GridBased:
       plugin: "nav2_smac_planner/SmacPlannerLattice"
-      tolerance: 0.04
+      tolerance: 0.05
       allow_unknown: true
-      max_iterations: 1000000
-      max_on_approach_iterations: 1500
-      max_planning_time: 3.0
-      analytic_expansion_ratio: 3.5
-      analytic_expansion_max_length: 3.0
+      max_iterations: 400000
+      max_on_approach_iterations: 1000
+      max_planning_time: 2.0
+      analytic_expansion_ratio: 3.0
+      analytic_expansion_max_length: 2.5
       analytic_expansion_max_cost: 200.0
       analytic_expansion_max_cost_override: false
       reverse_penalty: 1.0
       change_penalty: 0.06
       non_straight_penalty: 1.15
-      cost_penalty: 3.2
-      rotation_penalty: 2.0
+      cost_penalty: 3.0
+      rotation_penalty: 1.8
       retrospective_penalty: 0.015
       lattice_filepath: "__LATTICE_FILEPATH__"
       cache_obstacle_heuristic: false
       allow_reverse_expansion: true
       smooth_path: true
       smoother:
-        max_iterations: 1000
+        max_iterations: 500
         w_smooth: 0.35
         w_data: 0.2
         tolerance: 1.0e-10
@@ -368,7 +356,7 @@ smoother_server:
     simple_smoother:
       plugin: "nav2_smoother::SimpleSmoother"
       tolerance: 1.0e-10
-      max_its: 1000
+      max_its: 500
       do_refinement: true
 
 behavior_server:
@@ -414,7 +402,7 @@ waypoint_follower:
 velocity_smoother:
   ros__parameters:
     use_sim_time: false
-    smoothing_frequency: 15.0
+    smoothing_frequency: 25.0
     scale_velocities: false
     feedback: "CLOSED_LOOP"
     max_velocity: [0.25, 0.25, 0.80]
@@ -422,6 +410,6 @@ velocity_smoother:
     max_accel: [1.8, 1.8, 2.2]
     max_decel: [-1.8, -1.8, -2.2]
     odom_topic: "/ugv/odometry/filtered"
-    odom_duration: 0.1
+    odom_duration: 0.10
     deadband_velocity: [0.005, 0.005, 0.003]
-    velocity_timeout: 0.25
+    velocity_timeout: 0.20
