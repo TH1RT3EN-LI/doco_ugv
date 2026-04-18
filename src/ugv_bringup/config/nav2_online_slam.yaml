@@ -382,8 +382,9 @@ behavior_server:
     robot_base_frame: ugv_base_footprint
     transform_tolerance: 0.2
     use_sim_time: false
-    simulate_ahead_time: 0.35
-    max_rotational_vel: 0.30
+    # Further relax in-place spin collision prediction to reduce transient aborts.
+    simulate_ahead_time: 0.18
+    max_rotational_vel: 0.22
     min_rotational_vel: 0.08
     rotational_acc_lim: 1.8
 
