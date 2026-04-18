@@ -1,0 +1,11 @@
+/**:
+  ros__parameters:
+    assume_ugv_odom_is_global: true
+    pose_timeout_sec: 0.50
+    bootstrap_measurement_sync_tolerance_sec: 0.15
+    startup_relocalize_grace_sec: 2.0
+    relative_pose_global_topic: /ugv/relative_position/estimate/global
+    relative_pose_body_topic: /ugv/relative_position/estimate/uav_body
+    relative_velocity_topic: /ugv/relative_position/debug/relative_velocity
+    relocalize_requested_topic: /ugv/relative_position/relocalize_requested
+    diagnostics_topic: /ugv/relative_position/diagnostics
