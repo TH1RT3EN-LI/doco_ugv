@@ -45,6 +45,34 @@ def generate_launch_description():
     ugv_map_frame = LaunchConfiguration("ugv_map_frame")
     global_to_ugv_map = LaunchConfiguration("global_to_ugv_map")
     publish_global_map_tf = LaunchConfiguration("publish_global_map_tf")
+    enable_goal_pose_service = LaunchConfiguration("enable_goal_pose_service")
+    goal_pose_service_name = LaunchConfiguration("goal_pose_service_name")
+    goal_pose_service_goal_topic = LaunchConfiguration(
+        "goal_pose_service_goal_topic"
+    )
+    goal_pose_service_map_frame = LaunchConfiguration(
+        "goal_pose_service_map_frame"
+    )
+    goal_pose_service_normalize_goal_yaw = LaunchConfiguration(
+        "goal_pose_service_normalize_goal_yaw"
+    )
+    enable_relative_goal_service = LaunchConfiguration("enable_relative_goal_service")
+    relative_goal_service_name = LaunchConfiguration("relative_goal_service_name")
+    relative_goal_service_goal_topic = LaunchConfiguration(
+        "relative_goal_service_goal_topic"
+    )
+    relative_goal_service_map_frame = LaunchConfiguration(
+        "relative_goal_service_map_frame"
+    )
+    relative_goal_service_base_frame = LaunchConfiguration(
+        "relative_goal_service_base_frame"
+    )
+    relative_goal_service_transform_timeout_sec = LaunchConfiguration(
+        "relative_goal_service_transform_timeout_sec"
+    )
+    relative_goal_service_align_yaw_to_motion = LaunchConfiguration(
+        "relative_goal_service_align_yaw_to_motion"
+    )
 
     rewritten_params = RewrittenYaml(
         source_file=effective_params_file,
@@ -108,6 +136,51 @@ def generate_launch_description():
         condition=IfCondition(use_rviz),
     )
 
+    relative_goal_service = Node(
+        package="ugv_bringup",
+        executable="relative_goal_pose_service",
+        name="relative_goal_pose_service",
+        output="screen",
+        parameters=[
+            {
+                "use_sim_time": use_sim_time_param,
+                "service_name": relative_goal_service_name,
+                "goal_topic": relative_goal_service_goal_topic,
+                "map_frame": relative_goal_service_map_frame,
+                "base_frame": relative_goal_service_base_frame,
+                "transform_timeout_sec": ParameterValue(
+                    relative_goal_service_transform_timeout_sec,
+                    value_type=float,
+                ),
+                "align_yaw_to_motion": ParameterValue(
+                    relative_goal_service_align_yaw_to_motion,
+                    value_type=bool,
+                ),
+            }
+        ],
+        condition=IfCondition(enable_relative_goal_service),
+    )
+
+    goal_pose_service = Node(
+        package="ugv_bringup",
+        executable="goal_pose_service",
+        name="goal_pose_service",
+        output="screen",
+        parameters=[
+            {
+                "use_sim_time": use_sim_time_param,
+                "service_name": goal_pose_service_name,
+                "goal_topic": goal_pose_service_goal_topic,
+                "map_frame": goal_pose_service_map_frame,
+                "normalize_goal_yaw": ParameterValue(
+                    goal_pose_service_normalize_goal_yaw,
+                    value_type=bool,
+                ),
+            }
+        ],
+        condition=IfCondition(enable_goal_pose_service),
+    )
+
     return LaunchDescription(
         [
             DeclareLaunchArgument("use_sim_time", default_value=EnvironmentVariable("USE_SIM_TIME", default_value="false")),
@@ -126,6 +199,54 @@ def generate_launch_description():
                 description="Static transform x,y,z,roll,pitch,yaw from global_frame to ugv_map_frame",
             ),
             DeclareLaunchArgument("publish_global_map_tf", default_value="true"),
+            DeclareLaunchArgument(
+                "enable_goal_pose_service",
+                default_value="true",
+            ),
+            DeclareLaunchArgument(
+                "goal_pose_service_name",
+                default_value="/ugv/navigation/go_to_pose",
+            ),
+            DeclareLaunchArgument(
+                "goal_pose_service_goal_topic",
+                default_value="/ugv/goal_pose",
+            ),
+            DeclareLaunchArgument(
+                "goal_pose_service_map_frame",
+                default_value=ugv_map_frame,
+            ),
+            DeclareLaunchArgument(
+                "goal_pose_service_normalize_goal_yaw",
+                default_value="true",
+            ),
+            DeclareLaunchArgument(
+                "enable_relative_goal_service",
+                default_value="true",
+            ),
+            DeclareLaunchArgument(
+                "relative_goal_service_name",
+                default_value="/ugv/navigation/go_relative_xy",
+            ),
+            DeclareLaunchArgument(
+                "relative_goal_service_goal_topic",
+                default_value="/ugv/goal_pose",
+            ),
+            DeclareLaunchArgument(
+                "relative_goal_service_map_frame",
+                default_value=ugv_map_frame,
+            ),
+            DeclareLaunchArgument(
+                "relative_goal_service_base_frame",
+                default_value="ugv_base_footprint",
+            ),
+            DeclareLaunchArgument(
+                "relative_goal_service_transform_timeout_sec",
+                default_value="0.30",
+            ),
+            DeclareLaunchArgument(
+                "relative_goal_service_align_yaw_to_motion",
+                default_value="false",
+            ),
             DeclareLaunchArgument("params_file", default_value=default_params_file),
             DeclareLaunchArgument("effective_params_file", default_value=default_params_file),
             DeclareLaunchArgument("rviz_config", default_value=default_rviz_config),
@@ -133,6 +254,8 @@ def generate_launch_description():
             base_launch,
             slam_launch,
             nav2_navigation_launch,
+            goal_pose_service,
+            relative_goal_service,
             rviz_launch,
         ]
     )

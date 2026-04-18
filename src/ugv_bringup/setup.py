@@ -74,7 +74,9 @@ setup(
     license='GPL-3.0-only',
     entry_points={
         'console_scripts': [
+            'goal_pose_service = ugv_bringup.goal_pose_service:main',
             'initial_pose_publisher = ugv_bringup.initial_pose_publisher:main',
+            'relative_goal_pose_service = ugv_bringup.relative_goal_pose_service:main',
             'ugv_lattice = ugv_bringup.lattice_generator:main',
             'ugv_omni_lattice_preset = ugv_bringup.omni_lattice_preset:main',
         ],

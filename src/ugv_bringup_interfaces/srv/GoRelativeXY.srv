@@ -1,0 +1,9 @@
+float32 x
+float32 y
+---
+bool success
+string message
+string goal_frame_id
+float32 goal_x
+float32 goal_y
+float32 goal_yaw
